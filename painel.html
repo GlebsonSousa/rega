@@ -1,0 +1,934 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1B4D33">
+<title>Regador Inteligente</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F2EC; --card:#FFFFFF; --ink:#16241B; --mut:#6B7A70; --line:#E5E8E1;
+  --g900:#0F3521; --g800:#17482F; --g700:#1F5C3B; --g600:#26704A; --g500:#2F8A57; --g300:#7CC79A;
+  --mint:#E3F1E7; --mint2:#F0F7F2; --gold:#E2AE2C; --goldbg:#FBF0CF; --goldink:#7A5A0B;
+  --red:#D64545; --redbg:#FBE4E1; --redink:#8E2A22; --blue1:#DCE8FA; --blue2:#F1F6FD; --blueink:#1F3B63;
+  --shadow:0 1px 2px rgba(16,36,24,.05),0 6px 18px rgba(16,36,24,.06);
+  --r:18px;
+}
+:root[data-theme="dark"]{
+  --bg:#0E1611; --card:#16201A; --ink:#E7EFE9; --mut:#93A499; --line:#24312A;
+  --mint:#1C3226; --mint2:#18261E; --goldbg:#37301B; --goldink:#F1D27C;
+  --redbg:#3A1E1B; --redink:#F3A79F; --blue1:#1C2B40; --blue2:#16212F; --blueink:#BFD5F5;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1611; --card:#16201A; --ink:#E7EFE9; --mut:#93A499; --line:#24312A;
+    --mint:#1C3226; --mint2:#18261E; --goldbg:#37301B; --goldink:#F1D27C;
+    --redbg:#3A1E1B; --redink:#F3A79F; --blue1:#1C2B40; --blue2:#16212F; --blueink:#BFD5F5;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25);
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Plus Jakarta Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:15px;line-height:1.4}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.muted{color:var(--mut)}
+.cap{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--mut)}
+
+/* ---------- layout ---------- */
+.side{display:none}
+.main{padding:0 16px calc(96px + env(safe-area-inset-bottom));max-width:1240px;margin:0 auto}
+.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:10px;padding:12px 0;background:var(--bg)}
+.brand{font-weight:800;letter-spacing:.06em;font-size:1.05rem;display:flex;align-items:center;gap:8px}
+.brand small{display:block;font-size:.6rem;letter-spacing:.3em;color:var(--mut);font-weight:600}
+.brand .logo{width:34px;height:34px;border-radius:10px;background:var(--g700);color:#fff;display:grid;place-items:center}
+.top .sp{flex:1}
+.iconbtn{width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:var(--card);display:grid;place-items:center}
+.avatar{width:40px;height:40px;border-radius:50%;background:var(--g600);color:#fff;font-weight:700;display:grid;place-items:center;border:2px solid var(--g300)}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:99px;font-size:.75rem;font-weight:700;white-space:nowrap}
+.pill .dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+.pill.on{background:var(--mint);color:var(--g600)}
+.pill.off{background:var(--redbg);color:var(--red)}
+.pill.gold{background:rgba(226,174,44,.15);color:#E9C35B;border:1px solid rgba(226,174,44,.5)}
+.pill.ghost{background:rgba(255,255,255,.12);color:#DDF0E3;border:1px solid rgba(255,255,255,.18)}
+
+.tab{display:none;animation:in .25s ease}
+.tab.on{display:block}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ---------- banners ---------- */
+#banners{display:grid;gap:8px;margin-bottom:12px}
+.banner{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:14px;font-size:.9rem;font-weight:500}
+.banner.warn{background:var(--goldbg);color:var(--goldink)}
+.banner.err{background:var(--redbg);color:var(--redink)}
+.banner.ok{background:var(--mint);color:var(--g600)}
+.banner b{font-weight:700}
+
+/* ---------- hero ---------- */
+.hero{background:radial-gradient(120% 140% at 0% 0%,var(--g700) 0%,var(--g800) 45%,var(--g900) 100%);color:#fff;border-radius:26px;padding:20px;position:relative;overflow:hidden;display:grid;gap:16px}
+.hero:after{content:"";position:absolute;right:-40px;top:-30px;width:220px;height:220px;border-radius:50%;border:28px solid rgba(255,255,255,.04)}
+.hero .cap{color:#A9CDB6}
+.hero .pill.on{background:#DDF3E5;color:#1F5C3B}.hero .pill.off{background:#FBE4E1;color:#B3261E}
+.hello{display:flex;gap:14px;align-items:center}
+.hello .ph{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#3C8C5C,#1E5A39);border:3px solid rgba(255,255,255,.25);display:grid;place-items:center;font-size:1.5rem;font-weight:800}
+.hello h1{margin:2px 0 4px;font-size:1.7rem;line-height:1.1}
+.hello .date{font-size:.8rem;color:#BFD8C8;display:flex;align-items:center;gap:6px}
+.hello .pills{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.ringbox{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:14px;display:flex;gap:14px;align-items:center;position:relative;z-index:1}
+.ring{position:relative;width:76px;height:76px;flex:none}
+.ring svg{width:76px;height:76px;transform:rotate(-90deg)}
+.ring .n{position:absolute;inset:0;display:grid;place-items:center;text-align:center;font-weight:800;font-size:1.15rem;line-height:1}
+.ring .n small{display:block;font-size:.6rem;font-weight:600;color:#A9CDB6}
+.big{font-size:2rem;font-weight:800;line-height:1}
+.big small{font-size:1rem;color:#A9CDB6;font-weight:600;margin-left:6px}
+.bar{height:8px;border-radius:9px;background:rgba(255,255,255,.12);overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#7CC79A,#B9EBC9);border-radius:9px;transition:width .5s}
+.hero .btns{display:flex;gap:10px;flex-wrap:wrap;position:relative;z-index:1}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:12px;padding:11px 16px;font-weight:700;font-size:.9rem;min-height:44px}
+.btn.white{background:#fff;color:var(--g800)}
+.btn.glass{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.22)}
+.btn.green{background:var(--g600);color:#fff}
+.btn.red{background:var(--red);color:#fff}
+.btn.line{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+.btn.soft{background:var(--mint);color:var(--g600)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.full{width:100%}
+.heroQuick{display:none}
+.wx{display:none}
+
+/* ---------- cards ---------- */
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:16px;border:1px solid var(--line)}
+.grid{display:grid;gap:12px;margin-top:12px}
+.g2{grid-template-columns:1fr 1fr}
+.tile{border-radius:var(--r);padding:14px;min-height:118px;display:flex;flex-direction:column;justify-content:space-between;gap:8px;box-shadow:var(--shadow);position:relative;overflow:hidden;border:1px solid var(--line);background:var(--card)}
+.tile .ic{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--mint);color:var(--g600)}
+.tile h3{margin:0;font-size:.98rem}
+.tile p{margin:0;font-size:.78rem;color:var(--mut)}
+.tile.dark{background:var(--g700);color:#fff;border-color:transparent}
+.tile.dark p{color:#BFD8C8}.tile.dark .ic{background:rgba(255,255,255,.12);color:#fff}
+.tile.gold{background:var(--goldbg);border-color:transparent}
+.tile.gold .ic{background:var(--gold);color:#3D2C00}
+.tile.gold h3{color:var(--goldink)}
+.tile.blue{background:linear-gradient(160deg,var(--blue1),var(--blue2));border-color:transparent}
+.tile.blue .ic{background:var(--card);color:var(--blueink)}
+.tile.blue h3,.tile.blue .val{color:var(--blueink)}
+.tile.red{background:var(--redbg);border-color:transparent}
+.tile.red .ic{background:var(--red);color:#fff}
+.tile.tall{grid-row:span 2;min-height:250px}
+.tile .val{font-size:1.9rem;font-weight:800;line-height:1}
+.tile .val small{font-size:.95rem;color:var(--mut);font-weight:600}
+.tile .tag{position:absolute;right:12px;top:12px}
+.dots{display:flex;gap:4px}.dots i{width:7px;height:7px;border-radius:3px;background:var(--mint)}.dots i.on{background:var(--g500)}
+.wide{grid-column:1/-1;display:flex;flex-direction:row;align-items:center;min-height:auto;padding:16px}
+.wide .grow{flex:1}
+
+.sect{display:flex;align-items:center;justify-content:space-between;margin:22px 2px 10px}
+.sect h2{margin:0;font-size:1.05rem}
+.sect a,.link{color:var(--g500);font-weight:700;font-size:.8rem;text-decoration:none;background:none;border:0;padding:0}
+
+/* escala do solo (segmentada) */
+.scale{display:grid;grid-template-columns:repeat(20,1fr);gap:3px;margin-top:10px}
+.scale i{height:12px;border-radius:3px;opacity:.55}
+.scale i.cur{opacity:1;outline:2px solid var(--ink);outline-offset:1px}
+.scale .s{background:#E58A7E}.scale .m{background:#EBC76A}.scale .w{background:#6DBB8C}
+.scalelbl{display:flex;justify-content:space-between;font-size:.68rem;color:var(--mut);margin-top:6px}
+
+/* passos (saude do sistema) */
+.steps{display:flex;justify-content:space-between;gap:4px;margin-top:12px}
+.step{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:.66rem;color:var(--mut);text-align:center;font-weight:600}
+.step b{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;border:2px solid var(--line);color:var(--mut)}
+.step.ok b{background:var(--g500);border-color:var(--g500);color:#fff}
+.step.bad b{background:var(--redbg);border-color:var(--red);color:var(--red)}
+.step.wait b{background:var(--goldbg);border-color:var(--gold);color:var(--goldink)}
+
+/* listas */
+.list{display:grid;gap:8px}
+.item{display:flex;gap:12px;align-items:center;padding:12px;border-radius:14px;background:var(--mint2);border:1px solid var(--line)}
+.item .sq{width:44px;height:44px;border-radius:12px;background:var(--g700);color:#fff;display:grid;place-items:center;text-align:center;font-weight:800;line-height:1;flex:none}
+.item .sq small{display:block;font-size:.55rem;font-weight:600;opacity:.8}
+.item .grow{flex:1;min-width:0}
+.item .t{font-weight:700;font-size:.92rem}
+.item .s{font-size:.78rem;color:var(--mut)}
+.badge{font-size:.68rem;font-weight:700;padding:4px 9px;border-radius:99px;background:var(--mint);color:var(--g600);white-space:nowrap}
+.badge.gold{background:var(--goldbg);color:var(--goldink)}
+.badge.red{background:var(--redbg);color:var(--red)}
+.badge.gray{background:var(--line);color:var(--mut)}
+.empty{border:1.5px dashed var(--line);border-radius:14px;padding:16px;text-align:center;color:var(--mut);font-size:.85rem}
+
+.feed{display:grid}
+.ev{display:flex;gap:10px;padding:10px 2px;border-bottom:1px solid var(--line);font-size:.85rem}
+.ev:last-child{border-bottom:0}
+.ev .k{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex:none;background:var(--mint);color:var(--g600)}
+.ev .k svg{width:16px;height:16px}
+.ev.alerta .k,.ev.offline .k{background:var(--redbg);color:var(--red)}
+.ev.pedido .k{background:var(--goldbg);color:var(--goldink)}
+.ev.config .k{background:var(--blue1);color:var(--blueink)}
+.ev .h{font-size:.7rem;color:var(--mut)}
+
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--card);padding:8px 12px;border-radius:99px;font-weight:600;font-size:.82rem;min-height:38px}
+.chip.on{background:var(--g700);border-color:var(--g700);color:#fff}
+.people{display:flex;flex-wrap:wrap;gap:6px}
+.person{display:flex;align-items:center;gap:6px;padding:4px 10px 4px 4px;border-radius:99px;background:var(--mint);font-size:.8rem;font-weight:600}
+.person i{width:22px;height:22px;border-radius:50%;background:var(--g600);color:#fff;display:grid;place-items:center;font-style:normal;font-size:.65rem}
+
+/* sensores */
+.sens{display:grid;gap:12px;grid-template-columns:1fr 1fr}
+.sen .val{font-size:1.6rem;font-weight:800}
+.sen .sub{font-size:.75rem;color:var(--mut)}
+.chart{width:100%;height:90px;display:block;margin-top:8px}
+#charts{grid-template-columns:1fr}
+#charts .scalelbl{flex-wrap:wrap;gap:4px}
+.leds{display:flex;gap:12px;margin-top:6px}
+.led{width:22px;height:22px;border-radius:50%;opacity:.2;border:2px solid rgba(0,0,0,.08)}
+.led.on{opacity:1;box-shadow:0 0 12px currentColor}
+.kv{display:grid;grid-template-columns:1fr auto;gap:8px 12px;font-size:.86rem}
+.kv span:nth-child(odd){color:var(--mut)}
+.kv span:nth-child(even){font-weight:700;text-align:right}
+
+/* formulario */
+.form{display:grid;gap:14px}
+.field label{display:block;font-size:.78rem;font-weight:700;color:var(--mut);margin-bottom:6px}
+.field .hint{font-size:.72rem;color:var(--mut);margin-top:4px}
+input[type=text],input[type=number],input[type=password],select{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--mint2);min-height:44px}
+input:focus,select:focus{outline:2px solid var(--g500);outline-offset:1px}
+input[type=range]{width:100%;accent-color:var(--g500)}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);background:var(--mint2);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px}
+.seg button{border:0;background:none;border-radius:9px;padding:9px 4px;font-weight:700;font-size:.82rem;color:var(--mut)}
+.seg button.on{background:var(--card);color:var(--g600);box-shadow:var(--shadow)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* tabela historico */
+.hist{display:grid;gap:6px}
+.hrow{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;padding:10px 12px;border-radius:12px;background:var(--card);border:1px solid var(--line);font-size:.82rem}
+.hrow .w{font-size:.7rem;color:var(--mut);white-space:nowrap}
+.hrow .m{word-break:break-word}
+.hrow .tag{font-size:.65rem;font-weight:800;padding:2px 7px;border-radius:6px;text-transform:uppercase}
+.tag.rx{background:var(--blue1);color:var(--blueink)}.tag.tx{background:var(--mint);color:var(--g600)}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.78rem}
+
+/* bottom nav */
+.bnav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding:6px 6px calc(6px + env(safe-area-inset-bottom));box-shadow:0 -6px 18px rgba(0,0,0,.05)}
+.bnav button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.66rem;font-weight:700;color:var(--mut);padding:6px 0;min-height:48px}
+.bnav button.on{color:var(--g600)}
+.bnav .fab{position:relative}
+.bnav .fab span.c{position:absolute;top:-26px;width:58px;height:58px;border-radius:50%;background:var(--g600);color:#fff;display:grid;place-items:center;border:5px solid var(--bg);box-shadow:0 6px 16px rgba(31,92,59,.35)}
+.bnav .fab span.c svg{width:24px;height:24px}
+.bnav .fab .lb{margin-top:30px}
+.bnav .cnt{position:absolute;top:-30px;right:calc(50% - 36px);background:var(--red);color:#fff;font-size:.62rem;border-radius:99px;padding:1px 6px;z-index:2}
+
+/* toasts e modal */
+#toasts{position:fixed;top:12px;left:12px;right:12px;z-index:60;display:grid;gap:8px;pointer-events:none;max-width:460px;margin:0 auto}
+.toast{pointer-events:auto;background:var(--g800);color:#fff;padding:12px 14px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.25);display:flex;gap:10px;align-items:flex-start;font-size:.88rem;animation:tin .25s ease}
+.toast.warn{background:#7A5A0B}.toast.err{background:#8E2A22}
+@keyframes tin{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.modal{position:fixed;inset:0;z-index:70;background:rgba(8,20,13,.55);display:none;align-items:flex-end;justify-content:center;padding:0}
+.modal.on{display:flex}
+.sheet{background:var(--card);width:100%;max-width:480px;border-radius:24px 24px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom));max-height:90vh;overflow:auto}
+.sheet h3{margin:0 0 6px;font-size:1.15rem}
+.sheet ul{padding-left:18px;margin:8px 0 14px;color:var(--mut);font-size:.88rem}
+.sheet .acts{display:flex;gap:10px;margin-top:14px}
+.sheet .acts .btn{flex:1}
+
+/* ---------- desktop ---------- */
+@media (min-width:960px){
+  body{font-size:15px}
+  .side{display:flex;flex-direction:column;position:fixed;inset:0 auto 0 0;width:248px;background:var(--card);border-right:1px solid var(--line);padding:18px 14px;gap:4px;z-index:25}
+  .side .brand{padding:4px 8px 18px}
+  .side nav{display:grid;gap:4px}
+  .side nav button{display:flex;align-items:center;gap:12px;border:0;background:none;padding:11px 12px;border-radius:12px;font-weight:600;color:var(--ink);text-align:left}
+  .side nav button.on{background:var(--mint);color:var(--g600)}
+  .side .sp{flex:1}
+  .side .plan{background:var(--g800);color:#fff;border-radius:16px;padding:14px}
+  .side .plan .cap{color:#A9CDB6}
+  .side .me{display:flex;gap:10px;align-items:center;padding:12px 6px 0}
+  .main{margin-left:248px;padding:0 28px 40px;max-width:none}
+  .top .brand{display:none}
+  .bnav{display:none}
+  .hero{grid-template-columns:1.25fr 1fr 1.1fr;padding:24px;align-items:stretch}
+  .heroQuick{display:grid;gap:10px}
+  .heroQuick button{display:flex;align-items:center;gap:12px;background:#fff;color:var(--ink);border:0;border-radius:16px;padding:14px;text-align:left;position:relative;z-index:1}
+  .heroQuick button .ic{width:40px;height:40px;border-radius:12px;background:var(--mint);color:var(--g600);display:grid;place-items:center}
+  .heroQuick b{display:block;font-size:.95rem}.heroQuick small{color:var(--mut);font-size:.72rem}
+  .wx{display:block;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:16px;position:relative;z-index:1}
+  .wx .row{display:flex;justify-content:space-between;margin-top:12px;font-size:.8rem;color:#BFD8C8}
+  .wx .row b{display:block;color:#fff;font-size:1.05rem}
+  .wx .scale i{height:10px}
+  .wx .scalelbl{color:#A9CDB6}
+  .wx .scale i.cur{outline-color:#fff}
+  .grid.home{grid-template-columns:repeat(4,1fr)}
+  .tile.tall{grid-row:auto;min-height:118px}
+  .wide{grid-column:1/-1}
+  .cols{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;align-items:start}
+  .sens,#charts{grid-template-columns:repeat(3,1fr)}
+  .modal{align-items:center}
+  .sheet{border-radius:22px}
+  #toasts{left:auto;right:20px;top:20px;width:380px}
+}
+@media (min-width:600px) and (max-width:959px){
+  .grid.home{grid-template-columns:repeat(3,1fr)}
+  .sens{grid-template-columns:repeat(3,1fr)}
+}
+</style>
+</head>
+<body>
+
+<aside class="side">
+  <div class="brand"><span class="logo" id="logoSide"></span><div>REGADOR<small>INTELIGENTE</small></div></div>
+  <nav id="sideNav"></nav>
+  <div class="sp"></div>
+  <div class="plan">
+    <div class="cap">Modo atual</div>
+    <div style="font-weight:800;font-size:1.1rem;margin:4px 0 10px" id="sideModo">-</div>
+    <button class="btn white full" data-ir="ajustes">Ajustes</button>
+  </div>
+  <div class="me"><span class="avatar" id="sideAvatar">?</span><div><b id="sideNome">-</b><div class="muted" style="font-size:.75rem">conectado ao painel</div></div></div>
+</aside>
+
+<div class="main">
+  <header class="top">
+    <div class="brand"><span class="logo" id="logoTop"></span><div>REGADOR<small>INTELIGENTE</small></div></div>
+    <div class="sp"></div>
+    <span class="pill off" id="stPill"><span class="dot"></span>...</span>
+    <button class="iconbtn" id="btTema" aria-label="Alternar tema"></button>
+    <button class="avatar" id="avatar" aria-label="Trocar nome">?</button>
+  </header>
+
+  <div id="banners"></div>
+
+  <!-- ============ INICIO ============ -->
+  <section class="tab on" id="tab-inicio">
+    <div class="hero">
+      <div style="display:grid;gap:16px;position:relative;z-index:1">
+        <div class="hello">
+          <div class="ph" id="heroIni">?</div>
+          <div>
+            <div class="cap">Olá,</div>
+            <h1 id="heroNome">-</h1>
+            <div class="date" id="heroData"></div>
+          </div>
+        </div>
+        <div class="hello" style="margin-top:-6px"><div class="pills" id="heroPills"></div></div>
+        <div class="ringbox">
+          <div class="ring"><svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="32" stroke="rgba(255,255,255,.14)" stroke-width="8" fill="none"/><circle id="ringArc" cx="40" cy="40" r="32" stroke="#8FD6AA" stroke-width="8" fill="none" stroke-linecap="round" stroke-dasharray="201" stroke-dashoffset="201"/></svg><div class="n"><div><span id="ringN">--</span><small>%</small></div></div></div>
+          <div style="flex:1;min-width:0">
+            <div class="cap">Umidade do solo · agora</div>
+            <div class="big" id="heroSolo">--<small>%</small></div>
+            <div style="font-size:.78rem;color:#BFD8C8;margin-top:4px" id="heroSoloTxt">aguardando leitura</div>
+          </div>
+        </div>
+        <div class="btns">
+          <button class="btn white" data-acao="regar"><svg class="i" data-ic="drop"></svg>Regar agora</button>
+          <button class="btn glass" data-ir="sensores">Ver sensores</button>
+        </div>
+      </div>
+      <div class="heroQuick">
+        <button data-ir="sensores"><span class="ic"><svg class="i" data-ic="gauge"></svg></span><div style="flex:1"><b>Sensores</b><small>todos os sensores ao vivo</small></div><svg class="i" data-ic="chev"></svg></button>
+        <button data-ir="regas"><span class="ic"><svg class="i" data-ic="list"></svg></span><div style="flex:1"><b>Fila de regas</b><small id="qkFila">-</small></div><svg class="i" data-ic="chev"></svg></button>
+        <button data-ir="historico"><span class="ic"><svg class="i" data-ic="clock"></svg></span><div style="flex:1"><b>Histórico</b><small>envios e recebimentos</small></div><svg class="i" data-ic="chev"></svg></button>
+      </div>
+      <div class="wx">
+        <div style="display:flex;justify-content:space-between;align-items:center"><span class="cap">Campo · ao vivo</span><span class="pill ghost" id="wxLuz">-</span></div>
+        <div style="display:flex;align-items:baseline;gap:10px;margin-top:10px"><span class="big" id="wxTemp">--°</span><span style="color:#BFD8C8;font-size:.8rem" id="wxTempSub"></span></div>
+        <div class="row"><div>LDR<b id="wxLdr">-</b></div><div>BOMBA<b id="wxBomba">-</b></div><div>VEL.<b id="wxVel">-</b></div></div>
+        <div class="cap" style="margin-top:14px">Escala do solo</div>
+        <div class="scale" id="wxScale"></div>
+        <div class="scalelbl" id="wxScaleLbl"></div>
+      </div>
+    </div>
+
+    <div class="grid g2 home" id="tiles"></div>
+
+    <div class="card" style="margin-top:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center"><b>Saúde do sistema</b><span class="muted" style="font-size:.75rem" id="saudeTxt"></span></div>
+      <div class="steps" id="steps"></div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <b>Escala do solo</b><span class="muted" style="font-size:.78rem"> · liga abaixo do vermelho, mantém no amarelo, desliga no verde</span>
+      <div class="scale" id="scale"></div>
+      <div class="scalelbl" id="scaleLbl"></div>
+    </div>
+
+    <div class="cols">
+      <div>
+        <div class="sect"><h2>Fila de regas</h2><button class="link" data-ir="regas">Ver tudo →</button></div>
+        <div class="list" id="homeFila"></div>
+      </div>
+      <div>
+        <div class="sect"><h2>Atividade da rede</h2><button class="link" data-ir="historico">Histórico →</button></div>
+        <div class="card"><div class="feed" id="homeFeed"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SENSORES ============ -->
+  <section class="tab" id="tab-sensores">
+    <div class="sect" style="margin-top:4px"><h2>Sensores ao vivo</h2><span class="muted" style="font-size:.78rem" id="senQuando"></span></div>
+    <div class="sens" id="sens"></div>
+    <div class="sect"><h2>Gráficos (últimas leituras)</h2></div>
+    <div class="sens" id="charts"></div>
+    <div class="sect"><h2>Diagnóstico do Arduino e ESP-01</h2></div>
+    <div class="cols">
+      <div class="card"><div class="kv" id="diag"></div></div>
+      <div class="card"><b>Hoje</b><div class="kv" style="margin-top:10px" id="hoje"></div></div>
+    </div>
+  </section>
+
+  <!-- ============ REGAS ============ -->
+  <section class="tab" id="tab-regas">
+    <div class="cols">
+      <div>
+        <div class="card" id="formRega">
+          <b style="font-size:1.05rem">Pedir rega</b>
+          <p class="muted" style="margin:4px 0 12px;font-size:.84rem">Todos os conectados serão avisados. Se já houver rega recente, solo úmido ou rega na fila, a proteção contra encharcar pede a senha.</p>
+          <div class="field"><label>Duração</label>
+            <div class="chips" id="durChips"></div>
+            <input type="number" id="durInput" min="1" max="600" style="margin-top:8px" placeholder="segundos">
+          </div>
+          <div class="grid" style="grid-template-columns:1fr;margin-top:14px">
+            <button class="btn green full" data-acao="regar-form"><svg class="i" data-ic="drop"></svg>Pedir rega</button>
+            <div class="row2">
+              <button class="btn red" data-acao="parar"><svg class="i" data-ic="stop"></svg>Parar bomba</button>
+              <button class="btn line" data-acao="retomar"><svg class="i" data-ic="play"></svg>Retomar auto</button>
+            </div>
+          </div>
+          <div id="protBox" style="margin-top:12px"></div>
+        </div>
+        <div class="sect"><h2>Fila (buffer do servidor)</h2><button class="link" data-acao="limpar">Limpar fila</button></div>
+        <div class="list" id="filaFull"></div>
+      </div>
+      <div>
+        <div class="sect" style="margin-top:4px"><h2>Regas recentes</h2></div>
+        <div class="list" id="regasRec"></div>
+        <div class="sect"><h2>Conectados agora</h2></div>
+        <div class="card"><div class="people" id="people"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ HISTORICO ============ -->
+  <section class="tab" id="tab-historico">
+    <div class="sect" style="margin-top:4px"><h2>Histórico</h2><a id="csv" href="#" class="link">Exportar CSV ↓</a></div>
+    <div class="chips" id="histTipos"></div>
+    <div class="chips" id="histDirs" style="margin-top:8px"></div>
+    <div class="hist" id="histLista" style="margin-top:12px"></div>
+  </section>
+
+  <!-- ============ AJUSTES ============ -->
+  <section class="tab" id="tab-ajustes">
+    <div class="cols">
+      <div class="card">
+        <b style="font-size:1.05rem">Configuração do regador</b>
+        <p class="muted" style="margin:4px 0 14px;font-size:.84rem">Exige senha. Enquanto o Arduino não confirma uma configuração, outra pessoa não consegue enviar outra (aparece o aviso para ela).</p>
+        <div id="lockBox"></div>
+        <form class="form" id="cfgForm" autocomplete="off">
+          <div class="field"><label>Modo</label>
+            <div class="seg" id="segModo"><button type="button" data-v="0">Automático</button><button type="button" data-v="1">Manual</button><button type="button" data-v="2">Desligado</button></div>
+            <div class="hint">Automático: histerese (liga abaixo do limite, desliga no limite superior). Manual: só por pedido. Desligado: nada liga.</div>
+          </div>
+          <div class="row2">
+            <div class="field"><label>Liga abaixo de (%)</label><input type="number" name="lo" min="0" max="99"><div class="hint">padrão 34</div></div>
+            <div class="field"><label>Desliga a partir de (%)</label><input type="number" name="hi" min="1" max="100"><div class="hint">padrão 65</div></div>
+          </div>
+          <div class="field"><label>Velocidade da bomba: <span id="velTxt"></span></label>
+            <label style="display:flex;align-items:center;gap:8px;font-weight:600;color:var(--ink);margin:2px 0 8px"><input type="checkbox" id="velPot"> usar o potenciômetro (padrão)</label>
+            <input type="range" name="vel" min="0" max="255" id="velRange">
+          </div>
+          <div class="row2">
+            <div class="field"><label>Envio a cada (s)</label><input type="number" name="intervalo" min="5" max="600"><div class="hint">padrão 10</div></div>
+            <div class="field"><label>Rega manual padrão (s)</label><input type="number" name="duracao" min="1" max="600"><div class="hint">padrão 20</div></div>
+          </div>
+          <div class="field"><label>Proteção contra encharcar (min)</label><input type="number" name="protecao" min="0" max="1440"><div class="hint">Depois de uma rega, nova rega só com senha durante esse tempo (0 = só solo úmido/fila). Padrão 30.</div></div>
+          <button class="btn green full" type="submit">Salvar configuração</button>
+          <div class="row2">
+            <button class="btn line" type="button" data-acao="padroes">Restaurar padrões</button>
+            <button class="btn line" type="button" data-acao="recarregar">Desfazer edição</button>
+          </div>
+        </form>
+      </div>
+      <div style="display:grid;gap:12px">
+        <div class="card">
+          <b>Você</b>
+          <div class="field" style="margin-top:10px"><label>Seu nome (aparece para os outros)</label><input type="text" id="nomeInput" maxlength="24"></div>
+          <button class="btn soft full" style="margin-top:10px" data-acao="salvar-nome">Salvar nome</button>
+        </div>
+        <div class="card">
+          <b>Aparência</b>
+          <div class="seg" id="segTema" style="margin-top:10px"><button type="button" data-v="auto">Automático</button><button type="button" data-v="light">Claro</button><button type="button" data-v="dark">Escuro</button></div>
+        </div>
+        <div class="card">
+          <b>Valores ativos no Arduino</b>
+          <div class="kv" style="margin-top:10px" id="cfgAtual"></div>
+        </div>
+        <div class="card" id="senhaInfo"></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<nav class="bnav" id="bnav"></nav>
+<div id="toasts"></div>
+<div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
+
+<script>
+"use strict";
+/* ---------------- icones ---------------- */
+const IC = {
+  home:'<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+  gauge:'<path d="M12 14l4-4"/><path d="M3.3 17a9 9 0 1 1 17.4 0"/><circle cx="12" cy="14" r="1.5"/>',
+  drop:'<path d="M12 3s6 6.4 6 11a6 6 0 0 1-12 0c0-4.6 6-11 6-11z"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  cog:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 9 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.6 9a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"/>',
+  moon:'<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  thermo:'<path d="M14 14.8V5a2 2 0 0 0-4 0v9.8a4 4 0 1 0 4 0z"/>',
+  pump:'<path d="M4 20h16"/><rect x="6" y="9" width="8" height="8" rx="2"/><path d="M14 12h3a2 2 0 0 1 2 2v1"/><path d="M10 9V5h5"/><path d="M19 17.5c0 .8-.7 1.5-1.5 1.5"/>',
+  list:'<path d="M8 6h13M8 12h13M8 18h13"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>',
+  shield:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>',
+  users:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4-6"/>',
+  wifi:'<path d="M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M2 9a15 15 0 0 1 20 0"/><circle cx="12" cy="19.5" r="1"/>',
+  alert:'<path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/>',
+  check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  x:'<path d="M6 6l12 12M18 6 6 18"/>',
+  play:'<path d="M7 5v14l11-7z"/>',
+  stop:'<rect x="6" y="6" width="12" height="12" rx="2"/>',
+  chev:'<path d="M9 6l6 6-6 6"/>',
+  leaf:'<path d="M5 19c0-8 6-14 15-14 0 9-6 15-14 15"/><path d="M5 19 13 11"/>',
+  light:'<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.4 1 1.2 1 2.1h5c0-.9.4-1.7 1-2.1A6 6 0 0 0 12 3z"/>',
+  chip:'<rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/>',
+  send:'<path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/>',
+  inbox:'<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5h13L22 12v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6z"/>',
+  knob:'<circle cx="12" cy="12" r="8"/><path d="M12 12l3-4"/>',
+};
+const ic = (n, cls='i') => `<svg class="${cls}" viewBox="0 0 24 24">${IC[n]||''}</svg>`;
+function paintIcons(root=document){ root.querySelectorAll('svg[data-ic]').forEach(s=>{s.setAttribute('viewBox','0 0 24 24'); s.innerHTML=IC[s.dataset.ic]||''; s.classList.add('i'); s.removeAttribute('data-ic');}); }
+
+/* ---------------- utilidades ---------------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function ler(k){ try { return localStorage.getItem('regador_'+k); } catch(e){ return null; } }
+function gravar(k,v){ try { localStorage.setItem('regador_'+k, v); } catch(e){} }
+let SKEW = 0;
+const agoraS = () => Date.now()/1000 + SKEW;
+const hora = t => new Date(t*1000).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+const dataHora = t => new Date(t*1000).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+const rel = t => { const d = Math.max(0, agoraS()-t); return d<5?'agora':d<60?`há ${Math.floor(d)} s`:d<3600?`há ${Math.floor(d/60)} min`:d<86400?`há ${Math.floor(d/3600)} h`:dataHora(t); };
+const dur = s => { s = Math.max(0, Math.round(s||0)); if (s<60) return s+' s'; if (s<3600) return Math.floor(s/60)+' min'+(s%60?' '+s%60+' s':''); return Math.floor(s/3600)+' h '+Math.floor(s%3600/60)+' min'; };
+const ini = n => (n||'?').trim().split(/\s+/).map(p=>p[0]).slice(0,2).join('').toUpperCase();
+const num = (v, d=0) => (v===null||v===undefined||isNaN(v)) ? '-' : Number(v).toFixed(d);
+
+let NOME = ler('nome') || '';
+let E = null;            // ultimo estado do servidor
+let ultimoEv = 0, feed = [], aba = 'inicio';
+let histTipo = 'eventos', histDir = '';
+let cfgSujo = false, durEscolhida = null;
+
+/* ---------------- tema ---------------- */
+function aplicarTema(t){
+  if (t==='light' || t==='dark') document.documentElement.setAttribute('data-theme', t); else document.documentElement.removeAttribute('data-theme');
+  const escuro = t==='dark' || (t!=='light' && matchMedia('(prefers-color-scheme: dark)').matches);
+  $('#btTema').innerHTML = ic(escuro?'sun':'moon');
+  document.querySelectorAll('#segTema button').forEach(b=>b.classList.toggle('on', b.dataset.v===(t||'auto')));
+}
+let TEMA = ler('tema') || 'auto';
+aplicarTema(TEMA);
+$('#btTema').onclick = () => { const escuro = document.documentElement.getAttribute('data-theme')==='dark' || (TEMA==='auto' && matchMedia('(prefers-color-scheme: dark)').matches); TEMA = escuro?'light':'dark'; gravar('tema',TEMA); aplicarTema(TEMA); };
+document.querySelectorAll('#segTema button').forEach(b=>b.onclick=()=>{TEMA=b.dataset.v; gravar('tema',TEMA); aplicarTema(TEMA);});
+
+/* ---------------- navegacao ---------------- */
+const ABAS = [['inicio','Início','home'],['sensores','Sensores','gauge'],['regas','Regar','drop'],['historico','Histórico','clock'],['ajustes','Ajustes','cog']];
+$('#sideNav').innerHTML = ABAS.map(([k,t,i])=>`<button data-ir="${k}">${ic(i)}${t}</button>`).join('');
+$('#bnav').innerHTML = ABAS.map(([k,t,i])=> k==='regas'
+  ? `<button class="fab" data-ir="regas"><span class="c">${ic('drop')}</span><span class="cnt" id="fabCnt" style="display:none"></span><span class="lb">${t}</span></button>`
+  : `<button data-ir="${k}">${ic(i)}${t}</button>`).join('');
+$('#logoSide').innerHTML = ic('leaf'); $('#logoTop').innerHTML = ic('leaf');
+function irPara(k){
+  aba = k;
+  document.querySelectorAll('.tab').forEach(s=>s.classList.toggle('on', s.id==='tab-'+k));
+  document.querySelectorAll('[data-ir]').forEach(b=>{ if (b.closest('#sideNav')||b.closest('#bnav')) b.classList.toggle('on', b.dataset.ir===k); });
+  window.scrollTo({top:0,behavior:'smooth'});
+  if (k==='historico') carregarHistorico();
+  if (k==='ajustes' && !cfgSujo) preencherCfg();
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-ir]'); if (b){ irPara(b.dataset.ir); return; }
+  const a = e.target.closest('[data-acao]'); if (a) acao(a.dataset.acao, a);
+});
+
+/* ---------------- toasts e modal ---------------- */
+function toast(msg, tipo='', icone='check'){
+  const t = document.createElement('div'); t.className = 'toast '+tipo;
+  t.innerHTML = ic(icone) + `<div>${msg}</div>`;
+  $('#toasts').appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); }, tipo?7000:5000);
+  while ($('#toasts').children.length>4) $('#toasts').firstChild.remove();
+}
+function modal(html){ $('#sheet').innerHTML = html; paintIcons($('#sheet')); $('#modal').classList.add('on'); }
+function fecharModal(){ $('#modal').classList.remove('on'); }
+$('#modal').addEventListener('click', e=>{ if (e.target.id==='modal') fecharModal(); });
+
+function pedirSenha(titulo, motivos){
+  return new Promise(res=>{
+    modal(`<h3>${ic('shield')} ${esc(titulo)}</h3>
+      <p class="muted" style="margin:0;font-size:.88rem">Para continuar, digite a senha:</p>
+      ${motivos&&motivos.length?`<ul>${motivos.map(m=>`<li>${esc(m)}</li>`).join('')}</ul>`:''}
+      <input type="password" id="senhaIn" placeholder="senha" autocomplete="current-password">
+      <div class="acts"><button class="btn line" id="sNo">Cancelar</button><button class="btn green" id="sOk">Continuar</button></div>`);
+    const inp = $('#senhaIn'); setTimeout(()=>inp.focus(), 50);
+    const fim = v => { fecharModal(); res(v); };
+    $('#sNo').onclick = ()=>fim(null);
+    $('#sOk').onclick = ()=>fim(inp.value);
+    inp.onkeydown = e=>{ if (e.key==='Enter') fim(inp.value); };
+  });
+}
+function pedirNome(obrigatorio){
+  modal(`<h3>Como você quer ser chamado?</h3>
+    <p class="muted" style="margin:0 0 12px;font-size:.88rem">Seu nome aparece para todos quando você pedir uma rega ou mudar algo.</p>
+    <input type="text" id="nomeModal" maxlength="24" value="${esc(NOME)}" placeholder="ex.: João">
+    <div class="acts">${obrigatorio?'':'<button class="btn line" id="nNo">Cancelar</button>'}<button class="btn green" id="nOk">Entrar</button></div>`);
+  const inp = $('#nomeModal'); setTimeout(()=>inp.focus(),50);
+  const ok = ()=>{ const v = inp.value.trim().slice(0,24); if(!v){ inp.focus(); return; } NOME=v; gravar('nome',v); fecharModal(); renderUsuario(); atualizar(); };
+  $('#nOk').onclick = ok; inp.onkeydown = e=>{ if(e.key==='Enter') ok(); };
+  if (!obrigatorio) $('#nNo').onclick = fecharModal;
+}
+$('#avatar').onclick = ()=>pedirNome(false);
+
+/* ---------------- API ---------------- */
+async function post(url, body){
+  try {
+    const r = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+    let d = {}; try { d = await r.json(); } catch(e){}
+    return {status:r.status, d};
+  } catch(e){ return {status:0, d:{erro:'Sem conexão com o servidor'}}; }
+}
+// envia; se o servidor pedir senha, abre o modal e reenvia
+async function comSenha(url, body, titulo){
+  let r = await post(url, body);
+  while (r.status===403 && r.d.precisa_senha){
+    const s = await pedirSenha(titulo || r.d.erro, r.d.motivos);
+    if (s===null) return null;
+    r = await post(url, {...body, senha:s});
+    if (r.status===403 && r.d.erro==='Senha incorreta') toast('Senha incorreta. Tente de novo.','err','x');
+  }
+  return r;
+}
+function precisaNome(){ if (!NOME){ pedirNome(true); return true; } return false; }
+
+async function acao(qual, el){
+  if (qual==='recarregar'){ cfgSujo=false; preencherCfg(); return; }
+  if (qual==='salvar-nome'){ const v=$('#nomeInput').value.trim().slice(0,24); if(v){NOME=v;gravar('nome',v);renderUsuario();toast('Nome salvo');} return; }
+  if (precisaNome()) return;
+  let r;
+  if (qual==='regar' || qual==='regar-form'){
+    const d = qual==='regar-form' ? (parseInt($('#durInput').value)||durEscolhida||E?.config?.duracao) : E?.config?.duracao;
+    r = await comSenha('/api/regar', {nome:NOME, duracao:d}, 'Proteção contra encharcar');
+    if (!r) return;
+    if (r.d.ok){ toast(`Rega de ${d} s pedida · posição ${r.d.posicao} na fila`); if (r.d.aviso) toast(esc(r.d.aviso),'warn','alert'); }
+  } else if (qual==='parar'){
+    r = await post('/api/parar', {nome:NOME});
+    if (r.d.ok){ toast('Pedido de PARAR enviado (vai na frente da fila)'); if (r.d.aviso) toast(esc(r.d.aviso),'warn','alert'); }
+  } else if (qual==='retomar'){
+    r = await post('/api/retomar', {nome:NOME});
+    if (r.d.ok){ toast('Pedido para retomar o automático enviado'); if (r.d.aviso) toast(esc(r.d.aviso),'warn','alert'); }
+  } else if (qual==='cancelar'){
+    r = await comSenha('/api/cancelar', {nome:NOME, id:+el.dataset.id}, 'Cancelar pedido de outra pessoa');
+    if (!r) return; if (r.d.ok) toast('Pedido cancelado');
+  } else if (qual==='limpar'){
+    const s = await pedirSenha('Limpar toda a fila', ['Todos os pedidos que ainda não foram entregues ao Arduino serão cancelados']);
+    if (s===null) return;
+    r = await post('/api/fila/limpar', {nome:NOME, senha:s});
+    if (r.d.ok) toast(`Fila limpa (${r.d.cancelados} cancelado(s))`);
+  } else if (qual==='padroes'){
+    const s = await pedirSenha('Restaurar valores padrão', ['Liga < 34%, desliga ≥ 65%, automático, potenciômetro, envio 10 s, rega 20 s, proteção 30 min']);
+    if (s===null) return;
+    r = await post('/api/padroes', {nome:NOME, senha:s});
+    if (r.d.ok){ cfgSujo=false; toast(r.d.aguardando_arduino?'Padrões salvos. Aguardando o Arduino confirmar…':'Padrões salvos'); }
+  }
+  if (r && !r.d.ok && r.d.erro && !(r.status===403 && r.d.precisa_senha)) toast(esc(r.d.erro), r.status===409?'warn':'err', 'alert');
+  atualizar();
+}
+
+/* ---------------- formulario de configuracao ---------------- */
+const F = $('#cfgForm');
+let modoSel = 0;
+document.querySelectorAll('#segModo button').forEach(b=>b.onclick=()=>{ modoSel=+b.dataset.v; cfgSujo=true; marcarModo(); });
+function marcarModo(){ document.querySelectorAll('#segModo button').forEach(b=>b.classList.toggle('on', +b.dataset.v===modoSel)); }
+function velTexto(){ $('#velTxt').textContent = $('#velPot').checked ? 'potenciômetro' : $('#velRange').value + ' / 255'; $('#velRange').disabled = $('#velPot').checked; }
+$('#velPot').onchange = ()=>{ cfgSujo=true; velTexto(); };
+$('#velRange').oninput = ()=>{ cfgSujo=true; velTexto(); };
+F.addEventListener('input', ()=>cfgSujo=true);
+function preencherCfg(){
+  if (!E) return; const c = E.config;
+  ['lo','hi','intervalo','duracao','protecao'].forEach(k=>F.elements[k].value=c[k]);
+  modoSel = c.modo; marcarModo();
+  $('#velPot').checked = c.vel < 0; $('#velRange').value = c.vel < 0 ? 200 : c.vel; velTexto();
+  $('#nomeInput').value = NOME;
+}
+F.addEventListener('submit', async e=>{
+  e.preventDefault(); if (precisaNome()) return;
+  const body = {nome:NOME, modo:modoSel, vel: $('#velPot').checked ? -1 : +$('#velRange').value};
+  ['lo','hi','intervalo','duracao','protecao'].forEach(k=>body[k]=F.elements[k].value);
+  const s = await pedirSenha('Salvar configuração', ['As mudanças serão enviadas ao regador e todos serão avisados']);
+  if (s===null) return;
+  const r = await post('/api/config', {...body, senha:s});
+  if (r.d.ok){ cfgSujo=false; toast(r.d.aviso ? esc(r.d.aviso) : (r.d.aguardando_arduino ? 'Configuração salva. Aguardando o Arduino confirmar…' : 'Configuração salva')); }
+  else toast(esc(r.d.erro||'Erro ao salvar'), r.status===409?'warn':'err', 'alert');
+  atualizar();
+});
+
+/* ---------------- graficos ---------------- */
+function grafico(serie, chave, {cor='#2F8A57', min=null, max=null, linhas=[], bomba=false}={}){
+  const pts = serie.filter(p=>p[chave]!==null && p[chave]!==undefined);
+  if (pts.length<2) return '<div class="empty" style="margin-top:8px">Aguardando leituras…</div>';
+  const W=300,H=90,P=4; const t0=pts[0].em, t1=pts[pts.length-1].em||t0+1;
+  let lo = min ?? Math.min(...pts.map(p=>p[chave])), hi = max ?? Math.max(...pts.map(p=>p[chave]));
+  if (hi-lo<1){ hi+=1; lo-=1; }
+  const x = t => P + (W-2*P) * ((t - t0) / Math.max(1, t1 - t0));
+  const y = v => H-P - (H-2*P) * ((v - lo) / (hi - lo));
+  const d = pts.map((p,i)=>`${i?'L':'M'}${x(p.em).toFixed(1)},${y(p[chave]).toFixed(1)}`).join('');
+  let extra = '';
+  if (bomba) pts.forEach((p,i)=>{ if (p.bomba && i<pts.length-1){ extra += `<rect x="${x(p.em)}" y="0" width="${Math.max(1,x(pts[i+1].em)-x(p.em))}" height="${H}" fill="#7DB8F0" opacity=".18"/>`; } });
+  linhas.forEach(([v,c])=>{ if (v>lo && v<hi) extra += `<line x1="0" x2="${W}" y1="${y(v)}" y2="${y(v)}" stroke="${c}" stroke-dasharray="4 4" stroke-width="1"/>`; });
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${extra}
+    <path d="${d}L${x(t1)},${H}L${x(t0)},${H}Z" fill="${cor}" opacity=".12"/>
+    <path d="${d}" fill="none" stroke="${cor}" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>
+    <div class="scalelbl"><span>${hora(t0)}</span><span>mín ${num(Math.min(...pts.map(p=>p[chave])),1)} · máx ${num(Math.max(...pts.map(p=>p[chave])),1)}</span><span>${hora(t1)}</span></div>`;
+}
+function escala(el, lbl, solo, lo, hi){
+  let h=''; for(let i=0;i<20;i++){ const v=i*5; const c = v<lo?'s':(v<hi?'m':'w'); const cur = solo!==null && solo>=v && solo<v+5 || (solo===100 && i===19); h+=`<i class="${c}${cur?' cur':''}"></i>`; }
+  el.innerHTML = h;
+  lbl.innerHTML = `<span>0% seco</span><span>liga &lt; ${lo}%</span><span>desliga ≥ ${hi}%</span><span>100%</span>`;
+}
+
+/* ---------------- render ---------------- */
+function luzTxt(l){ return l>650?'Dia ensolarado':l>=400?'Dia nublado':'Noite'; }
+function soloTxt(s,c){ return s<c.lo?'Seco · bomba liga':(s<c.hi?'Meio úmido · mantém o estado':'Molhado · bomba desliga'); }
+function renderUsuario(){
+  const n = NOME || 'visitante';
+  $('#avatar').textContent = ini(n); $('#sideAvatar').textContent = ini(n); $('#sideNome').textContent = n;
+  $('#heroNome').textContent = n; $('#heroIni').textContent = ini(n);
+}
+function renderBanners(){
+  const b = [];
+  if (!E) { b.push(`<div class="banner err">${ic('wifi')}<div><b>Sem conexão com o servidor.</b> Tentando de novo…</div></div>`); }
+  else {
+    if (!E.online) b.push(`<div class="banner err">${ic('wifi')}<div><b>Regador offline.</b> ${E.dispositivo.visto?`Último contato ${rel(E.dispositivo.visto)}.`:'Ainda não conectou.'} Os pedidos ficam guardados na fila e são entregues quando ele voltar; o Arduino guarda as leituras e envia depois.</div></div>`);
+    if (E.ocupado) b.push(`<div class="banner warn">${ic('alert')}<div><b>${esc(E.ocupado.quem)} já está enviando dados ao regador automático</b> (${esc(E.ocupado.o_que)}). ${E.fila.length>1?`Há ${E.fila.length} pedidos na fila. `:''}Novos pedidos de rega entram na fila; configurações aguardam a confirmação do Arduino.</div></div>`);
+    if (E.leitura && E.leitura.erros) b.push(`<div class="banner err">${ic('alert')}<div><b>Sensor com problema:</b> ${Object.entries(E.textos.erros).filter(([k])=>E.leitura.erros & k).map(([,v])=>esc(v)).join('; ')}${(E.leitura.erros&2)?' — por segurança a rega automática fica desligada.':''}</div></div>`);
+  }
+  $('#banners').innerHTML = b.join('');
+}
+function renderInicio(){
+  const L = E.leitura, c = E.config, D = E.dispositivo || {};
+  const dias = new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'});
+  $('#heroData').innerHTML = ic('clock') + ' ' + esc(dias.charAt(0).toUpperCase()+dias.slice(1)) + ' · ' + new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  $('#heroPills').innerHTML = `<span class="pill gold">${ic('leaf')} MODO ${esc(E.textos.modos[c.modo].toUpperCase())}</span>` +
+    `<span class="pill ${E.online?'on':'off'}"><span class="dot"></span>${E.online?'Regador online':'Regador offline'}</span>` +
+    `<span class="pill ghost">${ic('users')} ${E.presenca.length}</span>`;
+  const s = L ? L.solo : null;
+  $('#ringN').textContent = s ?? '--';
+  $('#ringArc').setAttribute('stroke-dashoffset', 201 - 201*Math.min(100,Math.max(0,s||0))/100);
+  $('#heroSolo').innerHTML = `${s ?? '--'}<small>%</small>`;
+  $('#heroSoloTxt').textContent = L ? `${soloTxt(s,c)} · raw ${L.solo_raw} · ${rel(L.em)}` : 'aguardando a primeira leitura do Arduino';
+  $('#qkFila').textContent = E.fila.length ? `${E.fila.length} pedido(s) na fila` : 'fila vazia';
+  // painel "campo" (desktop)
+  $('#wxTemp').textContent = L ? num(L.temp,1)+'°' : '--°';
+  $('#wxTempSub').textContent = E.hoje.tmin!==null ? `mín ${num(E.hoje.tmin,1)}° / máx ${num(E.hoje.tmax,1)}° hoje` : '';
+  $('#wxLuz').textContent = L ? luzTxt(L.ldr) : '-';
+  $('#wxLdr').textContent = L ? L.ldr : '-';
+  $('#wxBomba').textContent = L ? (L.bomba?'LIGADA':'desligada') : '-';
+  $('#wxVel').textContent = L ? (L.bomba ? L.vel : '0') : '-';
+  escala($('#wxScale'), $('#wxScaleLbl'), s, c.lo, c.hi);
+  escala($('#scale'), $('#scaleLbl'), s, c.lo, c.hi);
+
+  // tiles
+  const P = E.protecao, rr = D.restante||0, pz = D.pausa||0;
+  const bombaSub = !L ? 'sem dados' : L.bomba ? `${esc(E.textos.motivos[L.motivo]||'')}${rr?` · faltam ${rr} s`:''}` : (pz?`automático pausado (${dur(pz)})`:'aguardando condição');
+  const t = [];
+  t.push(`<div class="tile tall"><div style="display:flex;justify-content:space-between"><span class="cap">Bomba d'água</span><div class="dots">${[0,1,2,3,4].map(i=>`<i class="${L&&L.bomba&&i<=Math.round((L.vel||0)/64)?'on':''}"></i>`).join('')}</div></div>
+    <div><div class="val">${L?(L.bomba?'Ligada':'Desligada'):'-'}</div><p style="margin-top:6px">${bombaSub}</p></div>
+    <div><p>Velocidade ${L?(L.bomba?L.vel:0):'-'}/255 · pot ${L?L.pot:'-'}</p><p>${E.hoje.regas} rega(s) hoje · ${dur(E.hoje.bomba_s)} ligada</p></div></div>`);
+  t.push(`<div class="tile blue"><div style="display:flex;justify-content:space-between;align-items:center"><span class="ic">${ic('thermo')}</span><span class="badge ${L&&L.erros&1?'red':''}">${L?luzTxt(L.ldr):'-'}</span></div>
+    <div><div class="val">${L?num(L.temp,1)+'°':'--'}</div><p>Temperatura · LDR ${L?L.ldr:'-'}</p></div></div>`);
+  t.push(`<div class="tile ${P.ativa?'gold':''}"><span class="ic">${ic('shield')}</span><div><h3>${P.ativa?'Proteção ativa':'Rega liberada'}</h3><p>${P.ativa?esc(P.motivos[0])+(P.motivos.length>1?` (+${P.motivos.length-1})`:''):'Sem rega recente, solo não encharcado'}</p></div></div>`);
+  t.push(`<div class="tile dark" data-ir="regas" style="cursor:pointer"><span class="ic">${ic('list')}</span><div><h3>Fila de regas</h3><p>${E.fila.length?`${E.fila.length} pedido(s) · próximo: ${esc(E.fila[0].descricao)}`:'Nenhum pedido aguardando'}</p></div></div>`);
+  t.push(`<div class="tile dark wide" style="background:var(--g600)"><span class="ic">${ic('drop')}</span><div class="grow" style="margin-left:12px"><span class="cap" style="color:#BFE3CB">Ação rápida</span><h3>Regar ${c.duracao} s agora</h3><p>todos os conectados serão avisados</p></div><button class="btn white" data-acao="regar">Regar</button></div>`);
+  $('#tiles').innerHTML = t.join('');
+
+  // saude
+  const passos = [
+    ['Arduino', E.online?'ok':'bad', E.online?'online':'offline'],
+    ['Sensores', L && !L.erros ? 'ok' : (L?'bad':'wait'), L&&L.erros?'erro':'ok'],
+    ['Config', E.config_aplicada?'ok':'wait', E.config_aplicada?`v${c.versao}`:'pendente'],
+    ['Buffer', (D.buffer||0)===0?'ok':'wait', `${D.buffer||0} leit.`],
+    ['Fila', E.fila.length?'wait':'ok', E.fila.length?`${E.fila.length} ped.`:'vazia'],
+  ];
+  $('#steps').innerHTML = passos.map(([n,st,sub])=>`<div class="step ${st}"><b>${ic(st==='ok'?'check':st==='bad'?'x':'clock')}</b>${n}<span style="font-weight:500">${sub}</span></div>`).join('');
+  $('#saudeTxt').textContent = D.visto ? `último contato ${rel(D.visto)}` : '';
+
+  $('#homeFila').innerHTML = filaHtml(E.fila.slice(0,3), false);
+  $('#homeFeed').innerHTML = feedHtml(feed.slice(-6).reverse());
+  const nf = E.fila.length; const fc = $('#fabCnt'); if (fc){ fc.style.display = nf?'block':'none'; fc.textContent = nf; }
+  $('#sideModo').textContent = E.textos.modos[c.modo].replace(/^./,m=>m.toUpperCase());
+}
+function filaHtml(lista, completo){
+  if (!lista.length) return `<div class="empty">${ic('check')} Nenhum pedido na fila</div>`;
+  return lista.map(p=>{
+    const st = p.status==='entregue' ? '<span class="badge gold">Enviado ao Arduino</span>' : `<span class="badge">Na fila · nº ${p.posicao}</span>`;
+    const canc = completo && p.status==='fila' ? `<button class="btn line" style="min-height:36px;padding:6px 10px" data-acao="cancelar" data-id="${p.id}">${ic('x')}</button>` : '';
+    return `<div class="item"><div class="sq">${p.posicao}<small>${p.tipo==='regar'?p.duracao+'s':p.tipo}</small></div>
+      <div class="grow"><div class="t">${esc(p.descricao.charAt(0).toUpperCase()+p.descricao.slice(1))}</div>
+      <div class="s">por ${esc(p.quem)} · ${rel(p.criado)}${p.forcado?' · <b style="color:var(--red)">liberado com senha</b>':''}</div></div>${st}${canc}</div>`;
+  }).join('');
+}
+const EV_IC = {pedido:'drop', rega:'pump', config:'cog', confirmacao:'check', entrega:'send', alerta:'alert', offline:'wifi', online:'wifi', info:'check'};
+function feedHtml(lista){
+  if (!lista.length) return '<div class="empty">Sem atividade ainda</div>';
+  return lista.map(e=>`<div class="ev ${esc(e.tipo)}"><span class="k">${ic(EV_IC[e.tipo]||'check')}</span><div><div>${esc(e.msg)}</div><div class="h">${rel(e.em)} · ${hora(e.em)}</div></div></div>`).join('');
+}
+function renderSensores(){
+  const L = E.leitura, c = E.config, D = E.dispositivo||{};
+  $('#senQuando').textContent = L ? `leitura ${rel(L.em)} · a cada ${c.intervalo} s` : '';
+  if (!L){ $('#sens').innerHTML = '<div class="empty" style="grid-column:1/-1">O Arduino ainda não enviou leituras.</div>'; }
+  else {
+    const led = L.led;
+    $('#sens').innerHTML = [
+      ['thermo','Temperatura (TMP36 · A2)', num(L.temp,1)+' °C', (L.erros&1)?'⚠ fora da faixa':'fórmula original do projeto'],
+      ['light','Luz (LDR · A0)', L.ldr, luzTxt(L.ldr)+' · >650 sol, 400–650 nublado'],
+      ['drop','Umidade do solo (A4)', L.solo+' %', `leitura bruta ${L.solo_raw} · ${soloTxt(L.solo,c)}`],
+      ['knob','Potenciômetro (A5)', L.pot, `velocidade resultante ${255-Math.floor(L.pot/4)}/255${c.vel>=0?' (painel fixou '+c.vel+')':''}`],
+      ['pump','Bomba (D6 · PWM)', L.bomba?'LIGADA':'desligada', `${esc(E.textos.motivos[L.motivo]||'-')} · vel ${L.bomba?L.vel:0}${D.restante?` · faltam ${D.restante} s`:''}${D.pausa?` · auto pausado ${dur(D.pausa)}`:''}`],
+    ].map(([i,n,v,sub])=>`<div class="card sen"><div style="display:flex;gap:8px;align-items:center" class="muted">${ic(i)}<span style="font-size:.78rem;font-weight:700">${n}</span></div><div class="val" style="margin-top:8px">${v}</div><div class="sub">${sub}</div></div>`).join('') +
+      `<div class="card sen"><div style="display:flex;gap:8px;align-items:center" class="muted">${ic('light')}<span style="font-size:.78rem;font-weight:700">LEDs (D2 · D3 · D4)</span></div>
+        <div class="leds" style="margin-top:12px"><span class="led ${led===0?'on':''}" style="background:#E5484D;color:#E5484D"></span><span class="led ${led===1?'on':''}" style="background:#F2B705;color:#F2B705"></span><span class="led ${led===2?'on':''}" style="background:#30A46C;color:#30A46C"></span></div>
+        <div class="sub" style="margin-top:8px">${esc(E.textos.leds[led]||'-')}</div></div>`;
+  }
+  const S = E.serie;
+  $('#charts').innerHTML =
+    `<div class="card"><b>Umidade do solo (%)</b>${grafico(S,'solo',{cor:'#2F8A57',min:0,max:100,linhas:[[c.lo,'#D64545'],[c.hi,'#30A46C']],bomba:true})}</div>` +
+    `<div class="card"><b>Temperatura (°C)</b>${grafico(S,'temp',{cor:'#E0892B'})}</div>` +
+    `<div class="card"><b>Luz (LDR)</b>${grafico(S,'ldr',{cor:'#C9A21B',min:0,max:1023,linhas:[[650,'#C9A21B'],[400,'#888']]})}</div>`;
+  const up = D.up||0;
+  $('#diag').innerHTML = [
+    ['Status', E.online?'online':'offline'], ['Último contato', D.visto?`${rel(D.visto)} (${hora(D.visto)})`:'-'],
+    ['Ligado há', D.up!==undefined?dur(up):'-'], ['Intervalo de envio', c.intervalo+' s'],
+    ['Leituras no buffer do Arduino', D.buffer??'-'], ['Leituras recebidas do buffer (último envio)', D.hist_recebido??'-'],
+    ['Leituras compactadas (descartadas)', D.descartadas??'-'], ['Ciclos atrasados', D.atrasos??'-'],
+    ['Última falha de comunicação', D.falha?`${esc(E.textos.falhas[D.falha]||D.falha)} (${D.nfalhas}x)`:'nenhuma'],
+    ['RAM livre no Uno', D.ram?D.ram+' bytes de 2048':'-'],
+    ['Config aplicada no Arduino', `v${D.cv??'-'} ${E.config_aplicada?'✓':'(servidor tem v'+c.versao+')'}`],
+    ['Último comando confirmado', D.ack?'#'+D.ack:'-'], ['Regas desde que ligou', D.regas??'-'], ['Bomba ligada desde que ligou', D.bomba_s!==undefined?dur(D.bomba_s):'-'],
+  ].map(([k,v])=>`<span>${k}</span><span>${v}</span>`).join('');
+  const H = E.hoje;
+  $('#hoje').innerHTML = [
+    ['Leituras recebidas', H.leituras], ['Envios do Arduino', H.comunicacoes], ['Regas', H.regas], ['Tempo de bomba', dur(H.bomba_s)],
+    ['Temperatura mín / máx', H.tmin!==null?`${num(H.tmin,1)}° / ${num(H.tmax,1)}°`:'-'], ['Temperatura média', H.tavg!==null?num(H.tavg,1)+'°':'-'],
+    ['Solo mín / máx', H.smin!==null?`${H.smin}% / ${H.smax}%`:'-'],
+  ].map(([k,v])=>`<span>${k}</span><span>${v}</span>`).join('');
+}
+function renderRegas(){
+  const c = E.config;
+  if (!$('#durChips').dataset.ok){
+    $('#durChips').dataset.ok = 1;
+    $('#durChips').innerHTML = [10,20,30,60,120].map(v=>`<button type="button" class="chip" data-d="${v}">${v} s</button>`).join('');
+    $('#durChips').onclick = e=>{ const b=e.target.closest('[data-d]'); if(!b) return; durEscolhida=+b.dataset.d; $('#durInput').value=durEscolhida; marcarDur(); };
+    $('#durInput').oninput = ()=>{ durEscolhida = parseInt($('#durInput').value)||null; marcarDur(); };
+  }
+  if (!durEscolhida){ durEscolhida = c.duracao; $('#durInput').value = c.duracao; }
+  marcarDur();
+  const P = E.protecao;
+  $('#protBox').innerHTML = c.modo===2 ? `<div class="banner err">${ic('alert')}<div>Modo <b>desligado</b>: pedidos de rega ficam bloqueados.</div></div>`
+    : P.ativa ? `<div class="banner warn">${ic('shield')}<div><b>Proteção contra encharcar ativa.</b> ${P.motivos.map(esc).join(' · ')}${P.ate?` · libera ${rel(P.ate).replace('há','em')} (${hora(P.ate)})`:''}. Para regar agora será pedida a senha.</div></div>`
+    : `<div class="banner ok">${ic('check')}<div>Rega liberada sem senha.</div></div>`;
+  $('#filaFull').innerHTML = filaHtml(E.fila, true);
+  $('#regasRec').innerHTML = E.regas.length ? E.regas.map(r=>`<div class="item"><div class="sq" style="background:${r.motivo===2?'var(--gold)':'var(--g600)'};color:${r.motivo===2?'#3D2C00':'#fff'}">${ic(r.motivo===2?'drop':'pump')}</div>
+     <div class="grow"><div class="t">${r.fim?dur(r.fim-r.inicio):'em andamento'} · ${esc(E.textos.motivos[r.motivo]||'')}</div><div class="s">${dataHora(r.inicio)}${r.quem?' · '+esc(r.quem):''}</div></div>${r.fim?'':'<span class="badge gold">agora</span>'}</div>`).join('') : '<div class="empty">Nenhuma rega registrada</div>';
+  $('#people').innerHTML = E.presenca.length ? E.presenca.map(p=>`<span class="person"><i>${esc(ini(p.nome))}</i>${esc(p.nome)}${p.nome===NOME?' (você)':''}</span>`).join('') : '<span class="muted">ninguém</span>';
+}
+function marcarDur(){ document.querySelectorAll('#durChips .chip').forEach(b=>b.classList.toggle('on', +b.dataset.d===durEscolhida)); }
+function renderAjustes(){
+  const c = E.config, D = E.dispositivo||{}, L = E.lock;
+  $('#lockBox').innerHTML = L && !L.expirado ? `<div class="banner warn" style="margin-bottom:12px">${ic('alert')}<div><b>${esc(L.quem)} já está enviando uma configuração</b> (v${L.versao}) ao regador. Aguarde o Arduino confirmar (${rel(L.desde)}).</div></div>`
+    : L && L.expirado ? `<div class="banner err" style="margin-bottom:12px">${ic('alert')}<div>O Arduino não confirmou a configuração v${L.versao} de ${esc(L.quem)} (offline?). Ela será aplicada quando ele voltar.</div></div>` : '';
+  $('#cfgAtual').innerHTML = [
+    ['Modo', E.textos.modos[c.modo]], ['Liga abaixo de', c.lo+'%'], ['Desliga a partir de', c.hi+'%'],
+    ['Velocidade', c.vel<0?'potenciômetro':c.vel+'/255'], ['Envio', 'a cada '+c.intervalo+' s'], ['Rega manual padrão', c.duracao+' s'],
+    ['Proteção', c.protecao+' min'], ['Versão', `v${c.versao} ${E.config_aplicada?'(aplicada ✓)':'(aguardando Arduino, ele está com v'+(D.cv??'-')+')'}`],
+  ].map(([k,v])=>`<span>${k}</span><span>${esc(v)}</span>`).join('');
+  $('#senhaInfo').innerHTML = `<b>Senha</b><p class="muted" style="font-size:.84rem;margin:6px 0 0">Pedida só para ações de risco: liberar a proteção contra encharcar, mudar configuração, restaurar padrões, limpar a fila ou cancelar pedido de outra pessoa.${E.senha_padrao?' <b style="color:var(--red)">A senha ainda é a padrão — troque SENHA_PAINEL no flask_app.py.</b>':''}</p>`;
+  if (aba!=='ajustes' || !cfgSujo) preencherCfg();
+}
+function render(){
+  renderUsuario(); renderBanners();
+  if (!E) return;
+  const st = $('#stPill'); st.className = 'pill '+(E.online?'on':'off'); st.innerHTML = `<span class="dot"></span>${E.online?'Online':'Offline'}`;
+  renderInicio(); renderSensores(); renderRegas(); renderAjustes();
+}
+
+/* ---------------- historico ---------------- */
+const HT = [['eventos','Eventos'],['comunicacao','Envios e recebimentos'],['pedidos','Pedidos'],['regas','Regas'],['leituras','Leituras']];
+$('#histTipos').innerHTML = HT.map(([k,t])=>`<button class="chip" data-ht="${k}">${t}</button>`).join('');
+$('#histTipos').onclick = e=>{ const b=e.target.closest('[data-ht]'); if(!b) return; histTipo=b.dataset.ht; histDir=''; carregarHistorico(); };
+$('#histDirs').onclick = e=>{ const b=e.target.closest('[data-hd]'); if(!b) return; histDir=b.dataset.hd; carregarHistorico(); };
+async function carregarHistorico(){
+  document.querySelectorAll('#histTipos .chip').forEach(b=>b.classList.toggle('on', b.dataset.ht===histTipo));
+  $('#histDirs').innerHTML = histTipo==='comunicacao' ? [['','Todos'],['recebido','Recebidos do Arduino'],['enviado','Enviados ao Arduino']].map(([k,t])=>`<button class="chip ${histDir===k?'on':''}" data-hd="${k}">${t}</button>`).join('') : '';
+  $('#csv').href = `/api/exportar.csv?tipo=${histTipo}`;
+  let rows = [];
+  try { rows = await (await fetch(`/api/historico?tipo=${histTipo}&n=150${histDir?'&direcao='+histDir:''}`)).json(); } catch(e){ $('#histLista').innerHTML = '<div class="empty">Sem conexão</div>'; return; }
+  if (!rows.length){ $('#histLista').innerHTML = '<div class="empty">Nada registrado ainda</div>'; return; }
+  const linha = (t, m, tag='') => `<div class="hrow"><span class="w">${dataHora(t)}</span><span class="m">${tag}${m}</span></div>`;
+  $('#histLista').innerHTML = rows.map(r=>{
+    if (histTipo==='eventos') return linha(r.em, esc(r.msg), `<span class="tag ${r.tipo==='alerta'||r.tipo==='offline'?'rx':'tx'}">${esc(r.tipo)}</span> `);
+    if (histTipo==='comunicacao') return linha(r.em, `<code>${esc(r.resumo)}</code>`, r.direcao==='recebido'?'<span class="tag rx">recebido ←</span> ':'<span class="tag tx">enviado →</span> ');
+    if (histTipo==='pedidos') return linha(r.criado, `<b>${esc(r.tipo)}</b>${r.tipo==='regar'?' '+r.duracao+' s':''} por ${esc(r.quem)} · <b>${esc(r.status)}</b>${r.forcado?' · liberado com senha':''}${r.executado?' · executado '+hora(r.executado):''}`);
+    if (histTipo==='regas') return linha(r.inicio, `${r.fim?dur(r.fim-r.inicio):'em andamento'} · ${esc(E?.textos.motivos[r.motivo]||r.motivo)}${r.quem?' · '+esc(r.quem):''}${r.origem==='buffer'?' · offline':''}`);
+    return linha(r.em, `T ${num(r.temp,1)}° · solo ${r.solo}%${r.solo_raw!==null?' (raw '+r.solo_raw+')':''} · LDR ${r.ldr}${r.pot!==null?' · pot '+r.pot:''} · bomba ${r.bomba?'ON':'off'}${r.erros?' · erro '+r.erros:''}`, r.origem==='buffer'?'<span class="tag rx">buffer</span> ':'');
+  }).join('');
+}
+
+/* ---------------- ciclo de atualizacao ---------------- */
+const AVISAR = new Set(['pedido','config','confirmacao','alerta','offline','online','rega']);
+let buscando = false, falhasSeguidas = 0;
+async function atualizar(){
+  if (buscando) return; buscando = true;
+  try {
+    const r = await fetch(`/api/estado?desde=${ultimoEv}&nome=${encodeURIComponent(NOME)}`, {cache:'no-store'});
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    SKEW = d.agora - Date.now()/1000;
+    if (d.inicial) feed = d.eventos;
+    else {
+      d.eventos.forEach(ev=>{
+        feed.push(ev);
+        if (AVISAR.has(ev.tipo)){
+          const proprio = ev.quem && ev.quem===NOME && ev.tipo==='pedido';
+          if (!proprio) toast(esc(ev.msg), ev.tipo==='alerta'||ev.tipo==='offline'?'err':ev.tipo==='pedido'?'warn':'', EV_IC[ev.tipo]||'check');
+          if (ev.tipo==='pedido' && navigator.vibrate) { try{ navigator.vibrate(60); }catch(e){} }
+        }
+      });
+      if (feed.length>200) feed = feed.slice(-200);
+    }
+    ultimoEv = Math.max(ultimoEv, d.ultimo_evento||0);
+    E = d; falhasSeguidas = 0;
+    render();
+    if (aba==='historico' && Date.now() - (window._ultHist||0) > 6000){ window._ultHist = Date.now(); carregarHistorico(); }
+  } catch(e){
+    if (++falhasSeguidas >= 2){ E = null; render(); }
+  } finally { buscando = false; }
+}
+
+paintIcons();
+renderUsuario();
+irPara('inicio');
+if (!NOME) pedirNome(true);
+atualizar();
+setInterval(atualizar, 3000);
+</script>
+</body>
+</html>
