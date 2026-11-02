@@ -14,6 +14,7 @@
   --g900:#0F3521; --g800:#17482F; --g700:#1F5C3B; --g600:#26704A; --g500:#2F8A57; --g300:#7CC79A;
   --mint:#E3F1E7; --mint2:#F0F7F2; --gold:#E2AE2C; --goldbg:#FBF0CF; --goldink:#7A5A0B;
   --red:#D64545; --redbg:#FBE4E1; --redink:#8E2A22; --blue1:#DCE8FA; --blue2:#F1F6FD; --blueink:#1F3B63;
+  --zs:#E58A7E; --zm:#EBC76A; --zw:#6DBB8C;
   --shadow:0 1px 2px rgba(16,36,24,.05),0 6px 18px rgba(16,36,24,.06);
   --r:18px;
 }
@@ -38,6 +39,7 @@ button{cursor:pointer}
 svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
 .muted{color:var(--mut)}
 .cap{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--mut)}
+h2,h3{margin:0}
 
 /* ---------- layout ---------- */
 .side{display:none}
@@ -50,12 +52,13 @@ svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stro
 .iconbtn{width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:var(--card);display:grid;place-items:center}
 .avatar{width:40px;height:40px;border-radius:50%;background:var(--g600);color:#fff;font-weight:700;display:grid;place-items:center;border:2px solid var(--g300)}
 .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:99px;font-size:.75rem;font-weight:700;white-space:nowrap}
+.pill svg{width:14px;height:14px}
 .pill .dot{width:7px;height:7px;border-radius:50%;background:currentColor}
 .pill.on{background:var(--mint);color:var(--g600)}
 .pill.off{background:var(--redbg);color:var(--red)}
+.pill.warn{background:var(--goldbg);color:var(--goldink)}
 .pill.gold{background:rgba(226,174,44,.15);color:#E9C35B;border:1px solid rgba(226,174,44,.5)}
 .pill.ghost{background:rgba(255,255,255,.12);color:#DDF0E3;border:1px solid rgba(255,255,255,.18)}
-
 .tab{display:none;animation:in .25s ease}
 .tab.on{display:block}
 @keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
@@ -74,19 +77,18 @@ svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stro
 .hero .cap{color:#A9CDB6}
 .hero .pill.on{background:#DDF3E5;color:#1F5C3B}.hero .pill.off{background:#FBE4E1;color:#B3261E}
 .hello{display:flex;gap:14px;align-items:center}
-.hello .ph{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#3C8C5C,#1E5A39);border:3px solid rgba(255,255,255,.25);display:grid;place-items:center;font-size:1.5rem;font-weight:800}
+.hello .ph{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#3C8C5C,#1E5A39);border:3px solid rgba(255,255,255,.25);display:grid;place-items:center;font-size:1.5rem;font-weight:800;flex:none}
 .hello h1{margin:2px 0 4px;font-size:1.7rem;line-height:1.1}
 .hello .date{font-size:.8rem;color:#BFD8C8;display:flex;align-items:center;gap:6px}
-.hello .pills{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.hello .date svg{width:15px;height:15px}
+.pills{display:flex;gap:6px;flex-wrap:wrap}
 .ringbox{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:14px;display:flex;gap:14px;align-items:center;position:relative;z-index:1}
 .ring{position:relative;width:76px;height:76px;flex:none}
 .ring svg{width:76px;height:76px;transform:rotate(-90deg)}
 .ring .n{position:absolute;inset:0;display:grid;place-items:center;text-align:center;font-weight:800;font-size:1.15rem;line-height:1}
 .ring .n small{display:block;font-size:.6rem;font-weight:600;color:#A9CDB6}
 .big{font-size:2rem;font-weight:800;line-height:1}
-.big small{font-size:1rem;color:#A9CDB6;font-weight:600;margin-left:6px}
-.bar{height:8px;border-radius:9px;background:rgba(255,255,255,.12);overflow:hidden;margin-top:8px}
-.bar i{display:block;height:100%;background:linear-gradient(90deg,#7CC79A,#B9EBC9);border-radius:9px;transition:width .5s}
+.big small{font-size:1rem;color:#A9CDB6;font-weight:600;margin-left:4px}
 .hero .btns{display:flex;gap:10px;flex-wrap:wrap;position:relative;z-index:1}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:12px;padding:11px 16px;font-weight:700;font-size:.9rem;min-height:44px}
 .btn.white{background:#fff;color:var(--g800)}
@@ -97,11 +99,14 @@ svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stro
 .btn.soft{background:var(--mint);color:var(--g600)}
 .btn:disabled{opacity:.5;cursor:not-allowed}
 .btn.full{width:100%}
+.btn.sm{min-height:36px;padding:7px 12px;font-size:.82rem}
 .heroQuick{display:none}
 .wx{display:none}
 
 /* ---------- cards ---------- */
 .card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:16px;border:1px solid var(--line)}
+.card h3{font-size:1.02rem}
+.card .sub{font-size:.82rem;color:var(--mut);margin:4px 0 0}
 .grid{display:grid;gap:12px;margin-top:12px}
 .g2{grid-template-columns:1fr 1fr}
 .tile{border-radius:var(--r);padding:14px;min-height:118px;display:flex;flex-direction:column;justify-content:space-between;gap:8px;box-shadow:var(--shadow);position:relative;overflow:hidden;border:1px solid var(--line);background:var(--card)}
@@ -118,29 +123,66 @@ svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stro
 .tile.blue h3,.tile.blue .val{color:var(--blueink)}
 .tile.red{background:var(--redbg);border-color:transparent}
 .tile.red .ic{background:var(--red);color:#fff}
+.tile.red h3{color:var(--redink)}
 .tile.tall{grid-row:span 2;min-height:250px}
 .tile .val{font-size:1.9rem;font-weight:800;line-height:1}
 .tile .val small{font-size:.95rem;color:var(--mut);font-weight:600}
-.tile .tag{position:absolute;right:12px;top:12px}
 .dots{display:flex;gap:4px}.dots i{width:7px;height:7px;border-radius:3px;background:var(--mint)}.dots i.on{background:var(--g500)}
 .wide{grid-column:1/-1;display:flex;flex-direction:row;align-items:center;min-height:auto;padding:16px}
 .wide .grow{flex:1}
-
-.sect{display:flex;align-items:center;justify-content:space-between;margin:22px 2px 10px}
-.sect h2{margin:0;font-size:1.05rem}
+.clk{cursor:pointer}
+.sect{display:flex;align-items:center;justify-content:space-between;margin:22px 2px 10px;gap:10px}
+.sect h2{font-size:1.05rem}
 .sect a,.link{color:var(--g500);font-weight:700;font-size:.8rem;text-decoration:none;background:none;border:0;padding:0}
 
-/* escala do solo (segmentada) */
+/* ---------- automatico (cartao de modo) ---------- */
+.modecard{margin-top:12px;border-radius:22px;padding:18px;background:linear-gradient(135deg,var(--g600),var(--g800));color:#fff;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.modecard.manual{background:linear-gradient(135deg,#3C4A60,#232D3D)}
+.modecard.off{background:linear-gradient(135deg,#8E2A22,#5E1B16)}
+.modecard .cap{color:rgba(255,255,255,.7)}
+.modecard .top2{display:flex;align-items:flex-start;gap:12px}
+.modecard h3{font-size:1.25rem;margin:2px 0}
+.modecard .st{font-size:.88rem;color:rgba(255,255,255,.85)}
+.modecard .pulse{width:10px;height:10px;border-radius:50%;background:#8FD6AA;box-shadow:0 0 0 0 rgba(143,214,170,.7);animation:pulse 1.6s infinite;display:inline-block;margin-right:6px}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(143,214,170,.7)}70%{box-shadow:0 0 0 10px rgba(143,214,170,0)}100%{box-shadow:0 0 0 0 rgba(143,214,170,0)}}
+
+/* barra de histerese */
+.hyst{position:relative;margin:26px 0 8px}
+.hyst .bar{display:flex;height:16px;border-radius:9px;overflow:hidden}
+.hyst .bar i{display:block;height:100%}
+.hyst .z1{background:var(--zs)}.hyst .z2{background:var(--zm)}.hyst .z3{background:var(--zw)}
+.hyst .mk{position:absolute;top:-4px;width:2px;height:24px;background:currentColor;opacity:.75}
+.hyst .now{position:absolute;top:-24px;transform:translateX(-50%);font-size:.72rem;font-weight:800;padding:2px 7px;border-radius:7px;background:#fff;color:#16241B;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.2);transition:left .5s}
+.hyst .now:after{content:"";position:absolute;left:50%;bottom:-5px;margin-left:-5px;border:5px solid transparent;border-top-color:#fff;border-bottom:0}
+.hyst .lbls{position:relative;height:18px;font-size:.7rem;margin-top:6px}
+.hyst .lbls span{position:absolute;transform:translateX(-50%);white-space:nowrap;font-weight:700}
+.zonas{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.zona{border-radius:12px;padding:10px;font-size:.76rem;background:var(--mint2);border:1px solid var(--line)}
+.zona b{display:block;font-size:.82rem;margin-bottom:2px}
+.zona.on{outline:2px solid var(--g500)}
+.zona .sw{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+
+/* chave liga/desliga */
+.switch{position:relative;width:62px;height:34px;border-radius:99px;border:0;background:#9AA59E;flex:none;transition:background .2s;padding:0}
+.switch:after{content:"";position:absolute;top:4px;left:4px;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.25);transition:left .2s}
+.switch.on{background:var(--g500)}
+.switch.on:after{left:32px}
+.switch:disabled{opacity:.5}
+.swrow{display:flex;align-items:center;gap:14px}
+.swrow .grow{flex:1}
+
+/* escala */
 .scale{display:grid;grid-template-columns:repeat(20,1fr);gap:3px;margin-top:10px}
 .scale i{height:12px;border-radius:3px;opacity:.55}
 .scale i.cur{opacity:1;outline:2px solid var(--ink);outline-offset:1px}
-.scale .s{background:#E58A7E}.scale .m{background:#EBC76A}.scale .w{background:#6DBB8C}
-.scalelbl{display:flex;justify-content:space-between;font-size:.68rem;color:var(--mut);margin-top:6px}
+.scale .s{background:var(--zs)}.scale .m{background:var(--zm)}.scale .w{background:var(--zw)}
+.scalelbl{display:flex;justify-content:space-between;font-size:.68rem;color:var(--mut);margin-top:6px;gap:4px}
 
-/* passos (saude do sistema) */
+/* passos */
 .steps{display:flex;justify-content:space-between;gap:4px;margin-top:12px}
 .step{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:.66rem;color:var(--mut);text-align:center;font-weight:600}
 .step b{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;border:2px solid var(--line);color:var(--mut)}
+.step b svg{width:16px;height:16px}
 .step.ok b{background:var(--g500);border-color:var(--g500);color:#fff}
 .step.bad b{background:var(--redbg);border-color:var(--red);color:var(--red)}
 .step.wait b{background:var(--goldbg);border-color:var(--gold);color:var(--goldink)}
@@ -157,7 +199,15 @@ svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stro
 .badge.gold{background:var(--goldbg);color:var(--goldink)}
 .badge.red{background:var(--redbg);color:var(--red)}
 .badge.gray{background:var(--line);color:var(--mut)}
+.badge.blue{background:var(--blue1);color:var(--blueink)}
 .empty{border:1.5px dashed var(--line);border-radius:14px;padding:16px;text-align:center;color:var(--mut);font-size:.85rem}
+.rega{padding:12px;border-radius:14px;background:var(--mint2);border:1px solid var(--line)}
+.rega .hd{display:flex;align-items:center;gap:10px}
+.rega .hd .grow{flex:1;min-width:0}
+.rega .ico{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;flex:none}
+.rega .specs{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:6px;margin-top:10px}
+.rega .specs div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 8px;font-size:.72rem;color:var(--mut)}
+.rega .specs b{display:block;font-size:.88rem;color:var(--ink)}
 
 .feed{display:grid}
 .ev{display:flex;gap:10px;padding:10px 2px;border-bottom:1px solid var(--line);font-size:.85rem}
@@ -180,15 +230,40 @@ svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stro
 .sens{display:grid;gap:12px;grid-template-columns:1fr 1fr}
 .sen .val{font-size:1.6rem;font-weight:800}
 .sen .sub{font-size:.75rem;color:var(--mut)}
-.chart{width:100%;height:90px;display:block;margin-top:8px}
-#charts{grid-template-columns:1fr}
-#charts .scalelbl{flex-wrap:wrap;gap:4px}
 .leds{display:flex;gap:12px;margin-top:6px}
 .led{width:22px;height:22px;border-radius:50%;opacity:.2;border:2px solid rgba(0,0,0,.08)}
 .led.on{opacity:1;box-shadow:0 0 12px currentColor}
 .kv{display:grid;grid-template-columns:1fr auto;gap:8px 12px;font-size:.86rem}
 .kv span:nth-child(odd){color:var(--mut)}
 .kv span:nth-child(even){font-weight:700;text-align:right}
+
+/* graficos */
+.charts{display:grid;gap:12px;grid-template-columns:1fr}
+.chartcard .hd{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.chartcard .now{font-size:1.4rem;font-weight:800}
+.chartcard .now small{font-size:.8rem;color:var(--mut);font-weight:600}
+.cwrap{position:relative;margin-top:8px;touch-action:pan-y}
+.cwrap svg{display:block;width:100%}
+.cwrap text{font-size:11px;fill:var(--mut);font-family:inherit}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--card);font-size:.75rem;padding:6px 8px;border-radius:8px;white-space:nowrap;transform:translate(-50%,-100%);display:none;z-index:2;font-weight:600}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:.72rem;color:var(--mut);margin-top:6px}
+.legend i{display:inline-block;width:12px;height:3px;border-radius:2px;margin-right:4px;vertical-align:middle}
+
+/* medidores (arduino) */
+.meter{margin-top:6px}
+.meter .mbar{height:12px;border-radius:7px;background:var(--line);overflow:hidden;display:flex}
+.meter .mbar i{display:block;height:100%}
+.meter .mlbl{display:flex;justify-content:space-between;font-size:.72rem;color:var(--mut);margin-top:4px}
+.stat{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.stat div{background:var(--mint2);border:1px solid var(--line);border-radius:12px;padding:10px}
+.stat b{display:block;font-size:1.15rem}
+.stat span{font-size:.72rem;color:var(--mut)}
+.verdict{display:flex;gap:14px;align-items:center}
+.verdict .vi{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;flex:none}
+.verdict .vi svg{width:28px;height:28px}
+.verdict.ok .vi{background:var(--mint);color:var(--g600)}
+.verdict.at .vi{background:var(--goldbg);color:var(--goldink)}
+.verdict.sb .vi{background:var(--redbg);color:var(--red)}
 
 /* formulario */
 .form{display:grid;gap:14px}
@@ -197,12 +272,15 @@ svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stro
 input[type=text],input[type=number],input[type=password],select{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--mint2);min-height:44px}
 input:focus,select:focus{outline:2px solid var(--g500);outline-offset:1px}
 input[type=range]{width:100%;accent-color:var(--g500)}
+.rng{display:grid;grid-template-columns:1fr 84px;gap:10px;align-items:center}
 .seg{display:grid;grid-template-columns:repeat(3,1fr);background:var(--mint2);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px}
 .seg button{border:0;background:none;border-radius:9px;padding:9px 4px;font-weight:700;font-size:.82rem;color:var(--mut)}
 .seg button.on{background:var(--card);color:var(--g600);box-shadow:var(--shadow)}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.preview{background:var(--mint2);border:1px dashed var(--g300);border-radius:12px;padding:10px 12px;font-size:.84rem}
+.warnTxt{color:var(--red);font-weight:700;font-size:.78rem;margin-top:6px;display:none}
 
-/* tabela historico */
+/* historico */
 .hist{display:grid;gap:6px}
 .hrow{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;padding:10px 12px;border-radius:12px;background:var(--card);border:1px solid var(--line);font-size:.82rem}
 .hrow .w{font-size:.7rem;color:var(--mut);white-space:nowrap}
@@ -213,9 +291,8 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.78rem}
 
 /* bottom nav */
 .bnav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding:6px 6px calc(6px + env(safe-area-inset-bottom));box-shadow:0 -6px 18px rgba(0,0,0,.05)}
-.bnav button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.66rem;font-weight:700;color:var(--mut);padding:6px 0;min-height:48px}
+.bnav button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.66rem;font-weight:700;color:var(--mut);padding:6px 0;min-height:48px;position:relative}
 .bnav button.on{color:var(--g600)}
-.bnav .fab{position:relative}
 .bnav .fab span.c{position:absolute;top:-26px;width:58px;height:58px;border-radius:50%;background:var(--g600);color:#fff;display:grid;place-items:center;border:5px solid var(--bg);box-shadow:0 6px 16px rgba(31,92,59,.35)}
 .bnav .fab span.c svg{width:24px;height:24px}
 .bnav .fab .lb{margin-top:30px}
@@ -226,18 +303,19 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.78rem}
 .toast{pointer-events:auto;background:var(--g800);color:#fff;padding:12px 14px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.25);display:flex;gap:10px;align-items:flex-start;font-size:.88rem;animation:tin .25s ease}
 .toast.warn{background:#7A5A0B}.toast.err{background:#8E2A22}
 @keyframes tin{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
-.modal{position:fixed;inset:0;z-index:70;background:rgba(8,20,13,.55);display:none;align-items:flex-end;justify-content:center;padding:0}
+.modal{position:fixed;inset:0;z-index:70;background:rgba(8,20,13,.55);display:none;align-items:flex-end;justify-content:center}
 .modal.on{display:flex}
 .sheet{background:var(--card);width:100%;max-width:480px;border-radius:24px 24px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom));max-height:90vh;overflow:auto}
-.sheet h3{margin:0 0 6px;font-size:1.15rem}
+.sheet h3{margin:0 0 6px;font-size:1.15rem;display:flex;gap:8px;align-items:center}
 .sheet ul{padding-left:18px;margin:8px 0 14px;color:var(--mut);font-size:.88rem}
 .sheet .acts{display:flex;gap:10px;margin-top:14px}
 .sheet .acts .btn{flex:1}
+.menu{display:grid;gap:8px;margin-top:10px}
+.menu button{display:flex;align-items:center;gap:12px;padding:14px;border-radius:14px;border:1px solid var(--line);background:var(--mint2);font-weight:700;text-align:left}
 
 /* ---------- desktop ---------- */
 @media (min-width:960px){
-  body{font-size:15px}
-  .side{display:flex;flex-direction:column;position:fixed;inset:0 auto 0 0;width:248px;background:var(--card);border-right:1px solid var(--line);padding:18px 14px;gap:4px;z-index:25}
+  .side{display:flex;flex-direction:column;position:fixed;inset:0 auto 0 0;width:248px;background:var(--card);border-right:1px solid var(--line);padding:18px 14px;gap:4px;z-index:25;overflow:auto}
   .side .brand{padding:4px 8px 18px}
   .side nav{display:grid;gap:4px}
   .side nav button{display:flex;align-items:center;gap:12px;border:0;background:none;padding:11px 12px;border-radius:12px;font-weight:600;color:var(--ink);text-align:left}
@@ -251,9 +329,9 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.78rem}
   .bnav{display:none}
   .hero{grid-template-columns:1.25fr 1fr 1.1fr;padding:24px;align-items:stretch}
   .heroQuick{display:grid;gap:10px}
-  .heroQuick button{display:flex;align-items:center;gap:12px;background:#fff;color:var(--ink);border:0;border-radius:16px;padding:14px;text-align:left;position:relative;z-index:1}
-  .heroQuick button .ic{width:40px;height:40px;border-radius:12px;background:var(--mint);color:var(--g600);display:grid;place-items:center}
-  .heroQuick b{display:block;font-size:.95rem}.heroQuick small{color:var(--mut);font-size:.72rem}
+  .heroQuick button{display:flex;align-items:center;gap:12px;background:#fff;color:#16241B;border:0;border-radius:16px;padding:14px;text-align:left;position:relative;z-index:1}
+  .heroQuick button .ic{width:40px;height:40px;border-radius:12px;background:#E3F1E7;color:#26704A;display:grid;place-items:center}
+  .heroQuick b{display:block;font-size:.95rem}.heroQuick small{color:#6B7A70;font-size:.72rem}
   .wx{display:block;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:16px;position:relative;z-index:1}
   .wx .row{display:flex;justify-content:space-between;margin-top:12px;font-size:.8rem;color:#BFD8C8}
   .wx .row b{display:block;color:#fff;font-size:1.05rem}
@@ -262,9 +340,10 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.78rem}
   .wx .scale i.cur{outline-color:#fff}
   .grid.home{grid-template-columns:repeat(4,1fr)}
   .tile.tall{grid-row:auto;min-height:118px}
-  .wide{grid-column:1/-1}
-  .cols{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;align-items:start}
-  .sens,#charts{grid-template-columns:repeat(3,1fr)}
+  .cols{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;align-items:start}
+  .sens{grid-template-columns:repeat(3,1fr)}
+  .charts{grid-template-columns:1fr 1fr}
+  .charts .full{grid-column:1/-1}
   .modal{align-items:center}
   .sheet{border-radius:22px}
   #toasts{left:auto;right:20px;top:20px;width:380px}
@@ -284,7 +363,7 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.78rem}
   <div class="plan">
     <div class="cap">Modo atual</div>
     <div style="font-weight:800;font-size:1.1rem;margin:4px 0 10px" id="sideModo">-</div>
-    <button class="btn white full" data-ir="ajustes">Ajustes</button>
+    <button class="btn white full" data-ir="auto">Configurar automático</button>
   </div>
   <div class="me"><span class="avatar" id="sideAvatar">?</span><div><b id="sideNome">-</b><div class="muted" style="font-size:.75rem">conectado ao painel</div></div></div>
 </aside>
@@ -300,7 +379,7 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.78rem}
 
   <div id="banners"></div>
 
-  <!-- ============ INICIO ============ -->
+  <!-- ===================== INICIO ===================== -->
   <section class="tab on" id="tab-inicio">
     <div class="hero">
       <div style="display:grid;gap:16px;position:relative;z-index:1">
@@ -312,7 +391,7 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.78rem}
             <div class="date" id="heroData"></div>
           </div>
         </div>
-        <div class="hello" style="margin-top:-6px"><div class="pills" id="heroPills"></div></div>
+        <div class="pills" id="heroPills"></div>
         <div class="ringbox">
           <div class="ring"><svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="32" stroke="rgba(255,255,255,.14)" stroke-width="8" fill="none"/><circle id="ringArc" cx="40" cy="40" r="32" stroke="#8FD6AA" stroke-width="8" fill="none" stroke-linecap="round" stroke-dasharray="201" stroke-dashoffset="201"/></svg><div class="n"><div><span id="ringN">--</span><small>%</small></div></div></div>
           <div style="flex:1;min-width:0">
@@ -322,24 +401,26 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.78rem}
           </div>
         </div>
         <div class="btns">
-          <button class="btn white" data-acao="regar"><svg class="i" data-ic="drop"></svg>Regar agora</button>
-          <button class="btn glass" data-ir="sensores">Ver sensores</button>
+          <button class="btn white" data-ir="regas"><svg data-ic="drop"></svg>Regar agora</button>
+          <button class="btn glass" data-ir="auto">Automático</button>
         </div>
       </div>
       <div class="heroQuick">
-        <button data-ir="sensores"><span class="ic"><svg class="i" data-ic="gauge"></svg></span><div style="flex:1"><b>Sensores</b><small>todos os sensores ao vivo</small></div><svg class="i" data-ic="chev"></svg></button>
-        <button data-ir="regas"><span class="ic"><svg class="i" data-ic="list"></svg></span><div style="flex:1"><b>Fila de regas</b><small id="qkFila">-</small></div><svg class="i" data-ic="chev"></svg></button>
-        <button data-ir="historico"><span class="ic"><svg class="i" data-ic="clock"></svg></span><div style="flex:1"><b>Histórico</b><small>envios e recebimentos</small></div><svg class="i" data-ic="chev"></svg></button>
+        <button data-ir="auto"><span class="ic"><svg data-ic="auto"></svg></span><div style="flex:1"><b>Modo automático</b><small id="qkAuto">-</small></div><svg data-ic="chev"></svg></button>
+        <button data-ir="sensores"><span class="ic"><svg data-ic="gauge"></svg></span><div style="flex:1"><b>Sensores e gráficos</b><small>todos os sensores ao vivo</small></div><svg data-ic="chev"></svg></button>
+        <button data-ir="arduino"><span class="ic"><svg data-ic="chip"></svg></span><div style="flex:1"><b>Arduino</b><small id="qkHw">-</small></div><svg data-ic="chev"></svg></button>
       </div>
       <div class="wx">
         <div style="display:flex;justify-content:space-between;align-items:center"><span class="cap">Campo · ao vivo</span><span class="pill ghost" id="wxLuz">-</span></div>
         <div style="display:flex;align-items:baseline;gap:10px;margin-top:10px"><span class="big" id="wxTemp">--°</span><span style="color:#BFD8C8;font-size:.8rem" id="wxTempSub"></span></div>
-        <div class="row"><div>LDR<b id="wxLdr">-</b></div><div>BOMBA<b id="wxBomba">-</b></div><div>VEL.<b id="wxVel">-</b></div></div>
+        <div class="row"><div>LDR<b id="wxLdr">-</b></div><div>BOMBA<b id="wxBomba">-</b></div><div>POTÊNCIA<b id="wxVel">-</b></div></div>
         <div class="cap" style="margin-top:14px">Escala do solo</div>
         <div class="scale" id="wxScale"></div>
         <div class="scalelbl" id="wxScaleLbl"></div>
       </div>
     </div>
+
+    <div class="modecard clk" id="modeCard" data-ir="auto"></div>
 
     <div class="grid g2 home" id="tiles"></div>
 
@@ -348,16 +429,12 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.78rem}
       <div class="steps" id="steps"></div>
     </div>
 
-    <div class="card" style="margin-top:12px">
-      <b>Escala do solo</b><span class="muted" style="font-size:.78rem"> · liga abaixo do vermelho, mantém no amarelo, desliga no verde</span>
-      <div class="scale" id="scale"></div>
-      <div class="scalelbl" id="scaleLbl"></div>
-    </div>
-
     <div class="cols">
       <div>
         <div class="sect"><h2>Fila de regas</h2><button class="link" data-ir="regas">Ver tudo →</button></div>
         <div class="list" id="homeFila"></div>
+        <div class="sect"><h2>Regas recentes</h2><button class="link" data-ir="regas">Ver todas →</button></div>
+        <div class="list" id="homeRegas"></div>
       </div>
       <div>
         <div class="sect"><h2>Atividade da rede</h2><button class="link" data-ir="historico">Histórico →</button></div>
@@ -366,104 +443,194 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.78rem}
     </div>
   </section>
 
-  <!-- ============ SENSORES ============ -->
-  <section class="tab" id="tab-sensores">
-    <div class="sect" style="margin-top:4px"><h2>Sensores ao vivo</h2><span class="muted" style="font-size:.78rem" id="senQuando"></span></div>
-    <div class="sens" id="sens"></div>
-    <div class="sect"><h2>Gráficos (últimas leituras)</h2></div>
-    <div class="sens" id="charts"></div>
-    <div class="sect"><h2>Diagnóstico do Arduino e ESP-01</h2></div>
+  <!-- ===================== AUTOMATICO ===================== -->
+  <section class="tab" id="tab-auto">
     <div class="cols">
-      <div class="card"><div class="kv" id="diag"></div></div>
-      <div class="card"><b>Hoje</b><div class="kv" style="margin-top:10px" id="hoje"></div></div>
+      <div style="display:grid;gap:12px">
+        <div class="card">
+          <div class="swrow">
+            <div class="grow">
+              <div class="cap">Modo de operação</div>
+              <h3 style="font-size:1.2rem;margin-top:2px" id="autoTitulo">Rega automática</h3>
+              <p class="sub" id="autoSub">-</p>
+            </div>
+            <button class="switch" id="swAuto" role="switch" aria-checked="false" aria-label="Rega automática"></button>
+          </div>
+          <div id="autoAviso"></div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h3>Como está agora</h3><span class="pill" id="autoPill">-</span></div>
+          <p class="sub" id="autoEstado">-</p>
+          <div class="hyst" id="hyst"></div>
+          <div class="zonas" id="zonas"></div>
+          <div style="margin-top:12px" id="autoAcoes"></div>
+        </div>
+
+        <div class="card">
+          <h3>Configuração do automático</h3>
+          <p class="sub">A bomba liga quando o solo fica abaixo do primeiro limite e desliga quando chega no segundo. Entre os dois ela mantém o que estava fazendo (histerese) — isso evita liga-desliga sem parar.</p>
+          <form class="form" id="fAuto" style="margin-top:14px" autocomplete="off">
+            <div class="field"><label>Liga abaixo de (solo seco)</label>
+              <div class="rng"><input type="range" min="0" max="99" data-par="lo"><input type="number" name="lo" min="0" max="99"></div>
+              <div class="hint">padrão 34%</div></div>
+            <div class="field"><label>Desliga a partir de (solo molhado)</label>
+              <div class="rng"><input type="range" min="1" max="100" data-par="hi"><input type="number" name="hi" min="1" max="100"></div>
+              <div class="hint">padrão 65%</div></div>
+            <div class="field"><label>Potência da bomba na rega automática: <span data-veltxt="vel"></span></label>
+              <label style="display:flex;align-items:center;gap:8px;font-weight:600;color:var(--ink);margin:2px 0 8px"><input type="checkbox" data-velpot="vel"> usar o potenciômetro (padrão)</label>
+              <input type="range" min="0" max="255" data-velrange="vel"></div>
+            <div class="preview" id="autoPreview"></div>
+            <button class="btn green full" type="submit"><svg data-ic="save"></svg>Salvar automático</button>
+          </form>
+        </div>
+      </div>
+
+      <div style="display:grid;gap:12px">
+        <div class="card">
+          <h3>Automático hoje</h3>
+          <div class="stat" id="autoStats"></div>
+        </div>
+        <div class="card">
+          <h3>Última rega automática</h3>
+          <div id="autoUltima" style="margin-top:10px"></div>
+        </div>
+        <div class="card chartcard" id="autoChartCard"></div>
+      </div>
     </div>
   </section>
 
-  <!-- ============ REGAS ============ -->
+  <!-- ===================== REGAR (MANUAL) ===================== -->
   <section class="tab" id="tab-regas">
     <div class="cols">
-      <div>
+      <div style="display:grid;gap:12px">
         <div class="card" id="formRega">
-          <b style="font-size:1.05rem">Pedir rega</b>
-          <p class="muted" style="margin:4px 0 12px;font-size:.84rem">Todos os conectados serão avisados. Se já houver rega recente, solo úmido ou rega na fila, a proteção contra encharcar pede a senha.</p>
-          <div class="field"><label>Duração</label>
+          <h3>Pedir rega manual</h3>
+          <p class="sub">Escolha de 2 a 10 s. Todos os conectados são avisados. Com rega recente, solo úmido ou rega na fila, a proteção contra encharcar pede a senha.</p>
+          <div class="field" style="margin-top:12px"><label>Duração</label>
             <div class="chips" id="durChips"></div>
-            <input type="number" id="durInput" min="1" max="600" style="margin-top:8px" placeholder="segundos">
+            <div class="rng" style="grid-template-columns:1fr auto;margin-top:8px"><input type="number" id="durInput" min="2" max="600" placeholder="outro valor (segundos)"><span class="muted" style="font-size:.8rem">segundos</span></div>
+            <div class="warnTxt" id="durWarn">Acima de 10 s — vai pedir confirmação.</div>
           </div>
-          <div class="grid" style="grid-template-columns:1fr;margin-top:14px">
-            <button class="btn green full" data-acao="regar-form"><svg class="i" data-ic="drop"></svg>Pedir rega</button>
+          <div class="preview" id="regaPreview" style="margin-top:12px"></div>
+          <div class="grid" style="grid-template-columns:1fr;margin-top:12px">
+            <button class="btn green full" data-acao="regar-form"><svg data-ic="drop"></svg>Pedir rega</button>
             <div class="row2">
-              <button class="btn red" data-acao="parar"><svg class="i" data-ic="stop"></svg>Parar bomba</button>
-              <button class="btn line" data-acao="retomar"><svg class="i" data-ic="play"></svg>Retomar auto</button>
+              <button class="btn red" data-acao="parar"><svg data-ic="stop"></svg>Parar bomba</button>
+              <button class="btn line" data-acao="retomar"><svg data-ic="play"></svg>Retomar auto</button>
             </div>
           </div>
           <div id="protBox" style="margin-top:12px"></div>
         </div>
-        <div class="sect"><h2>Fila (buffer do servidor)</h2><button class="link" data-acao="limpar">Limpar fila</button></div>
-        <div class="list" id="filaFull"></div>
+
+        <div class="card">
+          <h3>Configuração da rega manual</h3>
+          <p class="sub">Valores usados quando alguém pede rega pelo site.</p>
+          <form class="form" id="fManual" style="margin-top:14px" autocomplete="off">
+            <div class="field"><label>Duração padrão (botão "Regar agora")</label>
+              <div class="chips" id="durPadChips"></div>
+              <input type="number" name="duracao" min="2" max="600" style="margin-top:8px">
+              <div class="warnTxt" id="durPadWarn">Acima de 10 s — confirme ao salvar.</div></div>
+            <div class="field"><label>Potência da bomba na rega manual: <span data-veltxt="velm"></span></label>
+              <label style="display:flex;align-items:center;gap:8px;font-weight:600;color:var(--ink);margin:2px 0 8px"><input type="checkbox" data-velpot="velm"> usar o potenciômetro (padrão)</label>
+              <input type="range" min="0" max="255" data-velrange="velm"></div>
+            <div class="field"><label>Proteção contra encharcar (minutos)</label>
+              <input type="number" name="protecao" min="0" max="1440">
+              <div class="hint">Depois de qualquer rega, uma nova só com senha durante esse tempo (0 = só solo úmido/fila). Padrão 30.</div></div>
+            <button class="btn green full" type="submit"><svg data-ic="save"></svg>Salvar rega manual</button>
+          </form>
+        </div>
       </div>
-      <div>
-        <div class="sect" style="margin-top:4px"><h2>Regas recentes</h2></div>
-        <div class="list" id="regasRec"></div>
-        <div class="sect"><h2>Conectados agora</h2></div>
-        <div class="card"><div class="people" id="people"></div></div>
+
+      <div style="display:grid;gap:12px;align-content:start">
+        <div><div class="sect" style="margin-top:4px"><h2>Fila (buffer do servidor)</h2><button class="link" data-acao="limpar">Limpar fila</button></div>
+          <div class="list" id="filaFull"></div></div>
+        <div><div class="sect"><h2>Regas recentes</h2></div>
+          <div class="list" id="regasRec"></div></div>
+        <div><div class="sect"><h2>Conectados agora</h2></div>
+          <div class="card"><div class="people" id="people"></div></div></div>
       </div>
     </div>
   </section>
 
-  <!-- ============ HISTORICO ============ -->
+  <!-- ===================== SENSORES ===================== -->
+  <section class="tab" id="tab-sensores">
+    <div class="sect" style="margin-top:4px"><h2>Sensores ao vivo</h2><span class="muted" style="font-size:.78rem" id="senQuando"></span></div>
+    <div class="sens" id="sens"></div>
+    <div class="sect"><h2>Gráficos</h2></div>
+    <div class="chips" id="janelas"></div>
+    <div class="charts" id="charts" style="margin-top:12px"></div>
+    <div class="sect"><h2>Hoje</h2></div>
+    <div class="card"><div class="kv" id="hoje"></div></div>
+  </section>
+
+  <!-- ===================== ARDUINO ===================== -->
+  <section class="tab" id="tab-arduino">
+    <div class="card" id="hwVeredito"></div>
+    <div class="cols" style="margin-top:12px">
+      <div style="display:grid;gap:12px">
+        <div class="card" id="hwCpu"></div>
+        <div class="card" id="hwRam"></div>
+      </div>
+      <div style="display:grid;gap:12px">
+        <div class="card" id="hwBuf"></div>
+        <div class="card" id="hwCom"></div>
+      </div>
+    </div>
+    <div class="sect"><h2>Desempenho ao longo do tempo</h2></div>
+    <div class="chips" id="janelasHw"></div>
+    <div class="charts" id="chartsHw" style="margin-top:12px"></div>
+    <div class="card" style="margin-top:12px">
+      <h3>Como a carga é medida</h3>
+      <p class="sub">O clock do ATmega328P é fixo em 16 MHz (cristal) — ele não muda. O que muda é quanto desse tempo o programa usa. O Arduino conta quantas voltas o <code>loop()</code> dá por segundo: sem nada para fazer ele dá o máximo de voltas (0% de carga); quanto menos voltas, mais ocupado. Também mede a volta mais demorada: acima de <b>25 ms</b> é atenção e acima de <b>50 ms</b> é sobrecarga, porque a serial do ESP-01 guarda só 64 bytes (~66 ms a 9600 baud) e poderia perder dados.</p>
+    </div>
+  </section>
+
+  <!-- ===================== HISTORICO ===================== -->
   <section class="tab" id="tab-historico">
-    <div class="sect" style="margin-top:4px"><h2>Histórico</h2><a id="csv" href="#" class="link">Exportar CSV ↓</a></div>
+    <div class="sect" style="margin-top:4px"><h2>Histórico <span class="muted" style="font-size:.78rem;font-weight:600">· últimos 7 dias</span></h2><a id="csv" href="#" class="link">Exportar CSV ↓</a></div>
     <div class="chips" id="histTipos"></div>
     <div class="chips" id="histDirs" style="margin-top:8px"></div>
     <div class="hist" id="histLista" style="margin-top:12px"></div>
+    <p class="muted" style="font-size:.75rem;margin-top:12px" id="bancoInfo"></p>
   </section>
 
-  <!-- ============ AJUSTES ============ -->
+  <!-- ===================== AJUSTES ===================== -->
   <section class="tab" id="tab-ajustes">
     <div class="cols">
-      <div class="card">
-        <b style="font-size:1.05rem">Configuração do regador</b>
-        <p class="muted" style="margin:4px 0 14px;font-size:.84rem">Exige senha. Enquanto o Arduino não confirma uma configuração, outra pessoa não consegue enviar outra (aparece o aviso para ela).</p>
-        <div id="lockBox"></div>
-        <form class="form" id="cfgForm" autocomplete="off">
-          <div class="field"><label>Modo</label>
-            <div class="seg" id="segModo"><button type="button" data-v="0">Automático</button><button type="button" data-v="1">Manual</button><button type="button" data-v="2">Desligado</button></div>
-            <div class="hint">Automático: histerese (liga abaixo do limite, desliga no limite superior). Manual: só por pedido. Desligado: nada liga.</div>
-          </div>
-          <div class="row2">
-            <div class="field"><label>Liga abaixo de (%)</label><input type="number" name="lo" min="0" max="99"><div class="hint">padrão 34</div></div>
-            <div class="field"><label>Desliga a partir de (%)</label><input type="number" name="hi" min="1" max="100"><div class="hint">padrão 65</div></div>
-          </div>
-          <div class="field"><label>Velocidade da bomba: <span id="velTxt"></span></label>
-            <label style="display:flex;align-items:center;gap:8px;font-weight:600;color:var(--ink);margin:2px 0 8px"><input type="checkbox" id="velPot"> usar o potenciômetro (padrão)</label>
-            <input type="range" name="vel" min="0" max="255" id="velRange">
-          </div>
-          <div class="row2">
-            <div class="field"><label>Envio a cada (s)</label><input type="number" name="intervalo" min="5" max="600"><div class="hint">padrão 10</div></div>
-            <div class="field"><label>Rega manual padrão (s)</label><input type="number" name="duracao" min="1" max="600"><div class="hint">padrão 20</div></div>
-          </div>
-          <div class="field"><label>Proteção contra encharcar (min)</label><input type="number" name="protecao" min="0" max="1440"><div class="hint">Depois de uma rega, nova rega só com senha durante esse tempo (0 = só solo úmido/fila). Padrão 30.</div></div>
-          <button class="btn green full" type="submit">Salvar configuração</button>
-          <div class="row2">
-            <button class="btn line" type="button" data-acao="padroes">Restaurar padrões</button>
-            <button class="btn line" type="button" data-acao="recarregar">Desfazer edição</button>
-          </div>
-        </form>
-      </div>
       <div style="display:grid;gap:12px">
         <div class="card">
-          <b>Você</b>
+          <h3>Comunicação</h3>
+          <p class="sub">De quanto em quanto tempo o Arduino envia os dados e busca pedidos.</p>
+          <form class="form" id="fCom" style="margin-top:14px" autocomplete="off">
+            <div class="field"><label>Envio a cada (segundos)</label><input type="number" name="intervalo" min="5" max="600"><div class="hint">padrão 10 s · mínimo 5</div></div>
+            <button class="btn green full" type="submit"><svg data-ic="save"></svg>Salvar comunicação</button>
+          </form>
+        </div>
+        <div class="card">
+          <div class="swrow">
+            <div class="grow"><h3>Bloquear bomba</h3><p class="sub">Modo desligado: nada liga (nem automático nem pedidos). A fila espera.</p></div>
+            <button class="switch" id="swBloq" role="switch" aria-checked="false" aria-label="Bloquear bomba"></button>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Valores ativos</h3>
+          <div class="kv" style="margin-top:10px" id="cfgAtual"></div>
+          <div class="row2" style="margin-top:14px">
+            <button class="btn line" data-acao="padroes">Restaurar padrões</button>
+            <button class="btn line" data-acao="limpar">Limpar fila</button>
+          </div>
+        </div>
+      </div>
+      <div style="display:grid;gap:12px;align-content:start">
+        <div class="card">
+          <h3>Você</h3>
           <div class="field" style="margin-top:10px"><label>Seu nome (aparece para os outros)</label><input type="text" id="nomeInput" maxlength="24"></div>
           <button class="btn soft full" style="margin-top:10px" data-acao="salvar-nome">Salvar nome</button>
         </div>
         <div class="card">
-          <b>Aparência</b>
+          <h3>Aparência</h3>
           <div class="seg" id="segTema" style="margin-top:10px"><button type="button" data-v="auto">Automático</button><button type="button" data-v="light">Claro</button><button type="button" data-v="dark">Escuro</button></div>
-        </div>
-        <div class="card">
-          <b>Valores ativos no Arduino</b>
-          <div class="kv" style="margin-top:10px" id="cfgAtual"></div>
         </div>
         <div class="card" id="senhaInfo"></div>
       </div>
@@ -477,7 +644,7 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.78rem}
 
 <script>
 "use strict";
-/* ---------------- icones ---------------- */
+/* ================= icones ================= */
 const IC = {
   home:'<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
   gauge:'<path d="M12 14l4-4"/><path d="M3.3 17a9 9 0 1 1 17.4 0"/><circle cx="12" cy="14" r="1.5"/>',
@@ -487,7 +654,7 @@ const IC = {
   moon:'<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>',
   sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
   thermo:'<path d="M14 14.8V5a2 2 0 0 0-4 0v9.8a4 4 0 1 0 4 0z"/>',
-  pump:'<path d="M4 20h16"/><rect x="6" y="9" width="8" height="8" rx="2"/><path d="M14 12h3a2 2 0 0 1 2 2v1"/><path d="M10 9V5h5"/><path d="M19 17.5c0 .8-.7 1.5-1.5 1.5"/>',
+  pump:'<path d="M4 20h16"/><rect x="6" y="9" width="8" height="8" rx="2"/><path d="M14 12h3a2 2 0 0 1 2 2v1"/><path d="M10 9V5h5"/>',
   list:'<path d="M8 6h13M8 12h13M8 18h13"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>',
   shield:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>',
   users:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4-6"/>',
@@ -502,65 +669,92 @@ const IC = {
   light:'<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.4 1 1.2 1 2.1h5c0-.9.4-1.7 1-2.1A6 6 0 0 0 12 3z"/>',
   chip:'<rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/>',
   send:'<path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/>',
-  inbox:'<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5h13L22 12v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6z"/>',
   knob:'<circle cx="12" cy="12" r="8"/><path d="M12 12l3-4"/>',
+  auto:'<path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/><path d="M12 8v4l2.5 2"/>',
+  more:'<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>',
+  save:'<path d="M5 3h11l3 3v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M7 3v6h8V3M7 21v-7h10v7"/>',
+  bolt:'<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+  mem:'<rect x="3" y="7" width="18" height="10" rx="1.5"/><path d="M7 7v10M11 7v10M15 7v10M3 20h18"/>',
+  box:'<path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/>',
 };
 const ic = (n, cls='i') => `<svg class="${cls}" viewBox="0 0 24 24">${IC[n]||''}</svg>`;
-function paintIcons(root=document){ root.querySelectorAll('svg[data-ic]').forEach(s=>{s.setAttribute('viewBox','0 0 24 24'); s.innerHTML=IC[s.dataset.ic]||''; s.classList.add('i'); s.removeAttribute('data-ic');}); }
+function paintIcons(root=document){ root.querySelectorAll('svg[data-ic]').forEach(s=>{ s.setAttribute('viewBox','0 0 24 24'); s.innerHTML=IC[s.dataset.ic]||''; s.classList.add('i'); s.removeAttribute('data-ic'); }); }
 
-/* ---------------- utilidades ---------------- */
+/* ================= utilidades ================= */
 const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function ler(k){ try { return localStorage.getItem('regador_'+k); } catch(e){ return null; } }
 function gravar(k,v){ try { localStorage.setItem('regador_'+k, v); } catch(e){} }
 let SKEW = 0;
 const agoraS = () => Date.now()/1000 + SKEW;
 const hora = t => new Date(t*1000).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+const horaCurta = t => new Date(t*1000).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
 const dataHora = t => new Date(t*1000).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});
 const rel = t => { const d = Math.max(0, agoraS()-t); return d<5?'agora':d<60?`há ${Math.floor(d)} s`:d<3600?`há ${Math.floor(d/60)} min`:d<86400?`há ${Math.floor(d/3600)} h`:dataHora(t); };
-const dur = s => { s = Math.max(0, Math.round(s||0)); if (s<60) return s+' s'; if (s<3600) return Math.floor(s/60)+' min'+(s%60?' '+s%60+' s':''); return Math.floor(s/3600)+' h '+Math.floor(s%3600/60)+' min'; };
+const ate = t => { const d = Math.max(0, t-agoraS()); return d<60?`${Math.ceil(d)} s`:`${Math.ceil(d/60)} min`; };
+const dur = s => { s = Math.max(0, Math.round(s||0)); if (s<60) return s+' s'; if (s<3600) return Math.floor(s/60)+' min'+(s%60?' '+s%60+' s':''); if (s<86400) return Math.floor(s/3600)+' h '+Math.floor(s%3600/60)+' min'; return Math.floor(s/86400)+' d '+Math.floor(s%86400/3600)+' h'; };
 const ini = n => (n||'?').trim().split(/\s+/).map(p=>p[0]).slice(0,2).join('').toUpperCase();
-const num = (v, d=0) => (v===null||v===undefined||isNaN(v)) ? '-' : Number(v).toFixed(d);
+const num = (v, d=0) => (v===null||v===undefined||isNaN(v)) ? '-' : Number(v).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});
+const pct = v => v===null||v===undefined ? '-' : Math.round(v*100/255)+'%';
+const velTxt = v => (v===null||v===undefined) ? '-' : v<0 ? 'potenciômetro' : `${v}/255 (${pct(v)})`;
+const bytes = b => b>1048576 ? num(b/1048576,1)+' MB' : b>1024 ? num(b/1024,1)+' KB' : b+' B';
 
 let NOME = ler('nome') || '';
-let E = null;            // ultimo estado do servidor
-let ultimoEv = 0, feed = [], aba = 'inicio';
+let E = null, ultimoEv = 0, feed = [], aba = 'inicio';
 let histTipo = 'eventos', histDir = '';
-let cfgSujo = false, durEscolhida = null;
+let janela = +(ler('janela')||60), janelaHw = +(ler('janelaHw')||60);
+let SERIE = null, SERIEHW = null;
+const sujo = {};                   // formularios em edicao (nao sobrescrever)
+let durEscolhida = null;
 
-/* ---------------- tema ---------------- */
+/* ================= tema ================= */
 function aplicarTema(t){
-  if (t==='light' || t==='dark') document.documentElement.setAttribute('data-theme', t); else document.documentElement.removeAttribute('data-theme');
+  if (t==='light'||t==='dark') document.documentElement.setAttribute('data-theme', t); else document.documentElement.removeAttribute('data-theme');
   const escuro = t==='dark' || (t!=='light' && matchMedia('(prefers-color-scheme: dark)').matches);
   $('#btTema').innerHTML = ic(escuro?'sun':'moon');
-  document.querySelectorAll('#segTema button').forEach(b=>b.classList.toggle('on', b.dataset.v===(t||'auto')));
+  $$('#segTema button').forEach(b=>b.classList.toggle('on', b.dataset.v===(t||'auto')));
+  if (SERIE) desenharGraficos();
 }
 let TEMA = ler('tema') || 'auto';
 aplicarTema(TEMA);
 $('#btTema').onclick = () => { const escuro = document.documentElement.getAttribute('data-theme')==='dark' || (TEMA==='auto' && matchMedia('(prefers-color-scheme: dark)').matches); TEMA = escuro?'light':'dark'; gravar('tema',TEMA); aplicarTema(TEMA); };
-document.querySelectorAll('#segTema button').forEach(b=>b.onclick=()=>{TEMA=b.dataset.v; gravar('tema',TEMA); aplicarTema(TEMA);});
+$$('#segTema button').forEach(b=>b.onclick=()=>{ TEMA=b.dataset.v; gravar('tema',TEMA); aplicarTema(TEMA); });
 
-/* ---------------- navegacao ---------------- */
-const ABAS = [['inicio','Início','home'],['sensores','Sensores','gauge'],['regas','Regar','drop'],['historico','Histórico','clock'],['ajustes','Ajustes','cog']];
+/* ================= navegacao ================= */
+const ABAS = [['inicio','Início','home'],['auto','Automático','auto'],['regas','Regar','drop'],['sensores','Sensores','gauge'],['arduino','Arduino','chip'],['historico','Histórico','clock'],['ajustes','Ajustes','cog']];
 $('#sideNav').innerHTML = ABAS.map(([k,t,i])=>`<button data-ir="${k}">${ic(i)}${t}</button>`).join('');
-$('#bnav').innerHTML = ABAS.map(([k,t,i])=> k==='regas'
-  ? `<button class="fab" data-ir="regas"><span class="c">${ic('drop')}</span><span class="cnt" id="fabCnt" style="display:none"></span><span class="lb">${t}</span></button>`
-  : `<button data-ir="${k}">${ic(i)}${t}</button>`).join('');
+$('#bnav').innerHTML = [
+  `<button data-ir="inicio">${ic('home')}Início</button>`,
+  `<button data-ir="auto">${ic('auto')}Auto</button>`,
+  `<button class="fab" data-ir="regas"><span class="c">${ic('drop')}</span><span class="cnt" id="fabCnt" style="display:none"></span><span class="lb">Regar</span></button>`,
+  `<button data-ir="sensores">${ic('gauge')}Sensores</button>`,
+  `<button id="btMais" data-mais="1">${ic('more')}Mais</button>`].join('');
 $('#logoSide').innerHTML = ic('leaf'); $('#logoTop').innerHTML = ic('leaf');
 function irPara(k){
-  aba = k;
-  document.querySelectorAll('.tab').forEach(s=>s.classList.toggle('on', s.id==='tab-'+k));
-  document.querySelectorAll('[data-ir]').forEach(b=>{ if (b.closest('#sideNav')||b.closest('#bnav')) b.classList.toggle('on', b.dataset.ir===k); });
+  aba = k; fecharModal();
+  $$('.tab').forEach(s=>s.classList.toggle('on', s.id==='tab-'+k));
+  $$('#sideNav [data-ir], #bnav [data-ir]').forEach(b=>b.classList.toggle('on', b.dataset.ir===k));
+  $('#btMais').classList.toggle('on', ['arduino','historico','ajustes'].includes(k));
   window.scrollTo({top:0,behavior:'smooth'});
   if (k==='historico') carregarHistorico();
-  if (k==='ajustes' && !cfgSujo) preencherCfg();
+  if (k==='sensores' || k==='auto') carregarSerie();
+  if (k==='arduino') carregarSerieHw();
+  render();
 }
 document.addEventListener('click', e => {
+  if (e.target.closest('[data-mais]')) { abrirMais(); return; }
   const b = e.target.closest('[data-ir]'); if (b){ irPara(b.dataset.ir); return; }
   const a = e.target.closest('[data-acao]'); if (a) acao(a.dataset.acao, a);
 });
+function abrirMais(){
+  modal(`<h3>Mais</h3><div class="menu">
+    <button data-ir="arduino">${ic('chip')}<div><div>Arduino</div><div class="muted" style="font-size:.75rem;font-weight:500">memória, carga da CPU, buffer</div></div></button>
+    <button data-ir="historico">${ic('clock')}<div><div>Histórico</div><div class="muted" style="font-size:.75rem;font-weight:500">envios, recebimentos, regas (7 dias)</div></div></button>
+    <button data-ir="ajustes">${ic('cog')}<div><div>Ajustes</div><div class="muted" style="font-size:.75rem;font-weight:500">comunicação, bloquear bomba, nome, tema</div></div></button></div>`);
+}
 
-/* ---------------- toasts e modal ---------------- */
+/* ================= toasts e modal ================= */
 function toast(msg, tipo='', icone='check'){
   const t = document.createElement('div'); t.className = 'toast '+tipo;
   t.innerHTML = ic(icone) + `<div>${msg}</div>`;
@@ -586,6 +780,14 @@ function pedirSenha(titulo, motivos){
     inp.onkeydown = e=>{ if (e.key==='Enter') fim(inp.value); };
   });
 }
+function confirmar(titulo, texto, botao='Confirmar', perigo=true){
+  return new Promise(res=>{
+    modal(`<h3>${ic('alert')} ${esc(titulo)}</h3><p class="muted" style="font-size:.9rem">${texto}</p>
+      <div class="acts"><button class="btn line" id="cNo">Cancelar</button><button class="btn ${perigo?'red':'green'}" id="cOk">${esc(botao)}</button></div>`);
+    $('#cNo').onclick = ()=>{ fecharModal(); res(false); };
+    $('#cOk').onclick = ()=>{ fecharModal(); res(true); };
+  });
+}
 function pedirNome(obrigatorio){
   modal(`<h3>Como você quer ser chamado?</h3>
     <p class="muted" style="margin:0 0 12px;font-size:.88rem">Seu nome aparece para todos quando você pedir uma rega ou mudar algo.</p>
@@ -598,7 +800,7 @@ function pedirNome(obrigatorio){
 }
 $('#avatar').onclick = ()=>pedirNome(false);
 
-/* ---------------- API ---------------- */
+/* ================= API ================= */
 async function post(url, body){
   try {
     const r = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
@@ -606,7 +808,6 @@ async function post(url, body){
     return {status:r.status, d};
   } catch(e){ return {status:0, d:{erro:'Sem conexão com o servidor'}}; }
 }
-// envia; se o servidor pedir senha, abre o modal e reenvia
 async function comSenha(url, body, titulo){
   let r = await post(url, body);
   while (r.status===403 && r.d.precisa_senha){
@@ -618,14 +819,33 @@ async function comSenha(url, body, titulo){
   return r;
 }
 function precisaNome(){ if (!NOME){ pedirNome(true); return true; } return false; }
+function mostrarErro(r){ if (r && r.d && !r.d.ok && r.d.erro) toast(esc(r.d.erro), r.status===409?'warn':'err', 'alert'); }
+
+// salva um grupo de configuracoes (pede senha; trata trava de outro usuario)
+async function salvarCfg(campos, titulo, origem, formId){
+  if (precisaNome()) return false;
+  const r = await comSenha('/api/config', {...campos, nome:NOME, origem}, titulo);
+  if (!r) return false;
+  if (r.d.ok){
+    if (formId) sujo[formId] = false;
+    toast(r.d.aviso ? esc(r.d.aviso) : (r.d.aguardando_arduino ? `${esc(titulo)}: salvo. Aguardando o Arduino confirmar…` : `${esc(titulo)}: salvo`));
+    atualizar(); return true;
+  }
+  mostrarErro(r); atualizar(); return false;
+}
 
 async function acao(qual, el){
-  if (qual==='recarregar'){ cfgSujo=false; preencherCfg(); return; }
   if (qual==='salvar-nome'){ const v=$('#nomeInput').value.trim().slice(0,24); if(v){NOME=v;gravar('nome',v);renderUsuario();toast('Nome salvo');} return; }
   if (precisaNome()) return;
   let r;
   if (qual==='regar' || qual==='regar-form'){
-    const d = qual==='regar-form' ? (parseInt($('#durInput').value)||durEscolhida||E?.config?.duracao) : E?.config?.duracao;
+    const d = qual==='regar-form' ? (parseInt($('#durInput').value) || durEscolhida) : E?.config?.duracao;
+    if (!d || d < 2){ toast('A rega mínima é de 2 segundos.','err','alert'); return; }
+    if (d > 600){ toast('O máximo permitido é 600 segundos.','err','alert'); return; }
+    if (d > 10){
+      const ok = await confirmar('Rega acima de 10 segundos', `Você escolheu <b>${d} s</b>. O recomendado é no máximo <b>10 s</b> por rega para não encharcar o solo. Quer continuar mesmo assim?`, `Regar ${d} s`);
+      if (!ok) return;
+    }
     r = await comSenha('/api/regar', {nome:NOME, duracao:d}, 'Proteção contra encharcar');
     if (!r) return;
     if (r.d.ok){ toast(`Rega de ${d} s pedida · posição ${r.d.posicao} na fila`); if (r.d.aviso) toast(esc(r.d.aviso),'warn','alert'); }
@@ -644,70 +864,242 @@ async function acao(qual, el){
     r = await post('/api/fila/limpar', {nome:NOME, senha:s});
     if (r.d.ok) toast(`Fila limpa (${r.d.cancelados} cancelado(s))`);
   } else if (qual==='padroes'){
-    const s = await pedirSenha('Restaurar valores padrão', ['Liga < 34%, desliga ≥ 65%, automático, potenciômetro, envio 10 s, rega 20 s, proteção 30 min']);
+    const P = E?.padroes || {};
+    const s = await pedirSenha('Restaurar valores padrão', [`Automático: liga < ${P.lo}%, desliga ≥ ${P.hi}%, potência pelo potenciômetro`, `Manual: ${P.duracao} s, potência pelo potenciômetro, proteção ${P.protecao} min`, `Envio a cada ${P.intervalo} s · modo automático`]);
     if (s===null) return;
     r = await post('/api/padroes', {nome:NOME, senha:s});
-    if (r.d.ok){ cfgSujo=false; toast(r.d.aguardando_arduino?'Padrões salvos. Aguardando o Arduino confirmar…':'Padrões salvos'); }
+    if (r.d.ok){ Object.keys(sujo).forEach(k=>sujo[k]=false); toast(r.d.aguardando_arduino?'Padrões salvos. Aguardando o Arduino confirmar…':'Padrões salvos'); }
   }
-  if (r && !r.d.ok && r.d.erro && !(r.status===403 && r.d.precisa_senha)) toast(esc(r.d.erro), r.status===409?'warn':'err', 'alert');
+  if (r && !(r.status===403 && r.d.precisa_senha)) mostrarErro(r);
   atualizar();
 }
 
-/* ---------------- formulario de configuracao ---------------- */
-const F = $('#cfgForm');
-let modoSel = 0;
-document.querySelectorAll('#segModo button').forEach(b=>b.onclick=()=>{ modoSel=+b.dataset.v; cfgSujo=true; marcarModo(); });
-function marcarModo(){ document.querySelectorAll('#segModo button').forEach(b=>b.classList.toggle('on', +b.dataset.v===modoSel)); }
-function velTexto(){ $('#velTxt').textContent = $('#velPot').checked ? 'potenciômetro' : $('#velRange').value + ' / 255'; $('#velRange').disabled = $('#velPot').checked; }
-$('#velPot').onchange = ()=>{ cfgSujo=true; velTexto(); };
-$('#velRange').oninput = ()=>{ cfgSujo=true; velTexto(); };
-F.addEventListener('input', ()=>cfgSujo=true);
-function preencherCfg(){
-  if (!E) return; const c = E.config;
-  ['lo','hi','intervalo','duracao','protecao'].forEach(k=>F.elements[k].value=c[k]);
-  modoSel = c.modo; marcarModo();
-  $('#velPot').checked = c.vel < 0; $('#velRange').value = c.vel < 0 ? 200 : c.vel; velTexto();
-  $('#nomeInput').value = NOME;
+/* ================= formularios ================= */
+// controles de potencia (checkbox "potenciometro" + slider), reutilizados
+function velLer(campo){ return $(`[data-velpot="${campo}"]`).checked ? -1 : +$(`[data-velrange="${campo}"]`).value; }
+function velPreencher(campo, v){ $(`[data-velpot="${campo}"]`).checked = v<0; $(`[data-velrange="${campo}"]`).value = v<0 ? 200 : v; velTexto(campo); }
+function velTexto(campo){
+  const pot = $(`[data-velpot="${campo}"]`).checked, rg = $(`[data-velrange="${campo}"]`);
+  rg.disabled = pot;
+  $(`[data-veltxt="${campo}"]`).textContent = pot ? 'potenciômetro' : `${rg.value}/255 (${pct(+rg.value)})`;
 }
-F.addEventListener('submit', async e=>{
-  e.preventDefault(); if (precisaNome()) return;
-  const body = {nome:NOME, modo:modoSel, vel: $('#velPot').checked ? -1 : +$('#velRange').value};
-  ['lo','hi','intervalo','duracao','protecao'].forEach(k=>body[k]=F.elements[k].value);
-  const s = await pedirSenha('Salvar configuração', ['As mudanças serão enviadas ao regador e todos serão avisados']);
-  if (s===null) return;
-  const r = await post('/api/config', {...body, senha:s});
-  if (r.d.ok){ cfgSujo=false; toast(r.d.aviso ? esc(r.d.aviso) : (r.d.aguardando_arduino ? 'Configuração salva. Aguardando o Arduino confirmar…' : 'Configuração salva')); }
-  else toast(esc(r.d.erro||'Erro ao salvar'), r.status===409?'warn':'err', 'alert');
-  atualizar();
+['vel','velm'].forEach(c=>{
+  $(`[data-velpot="${c}"]`).addEventListener('change', ()=>velTexto(c));
+  $(`[data-velrange="${c}"]`).addEventListener('input', ()=>velTexto(c));
+});
+['fAuto','fManual','fCom'].forEach(id=>$('#'+id).addEventListener('input', ()=>{ sujo[id]=true; if(id==='fAuto') previewAuto(); if(id==='fManual') avisoDurPad(); }));
+
+// sliders sincronizados com os campos numericos (automatico)
+$$('#fAuto [data-par]').forEach(rg=>{
+  const n = $('#fAuto').elements[rg.dataset.par];
+  rg.addEventListener('input', ()=>{ n.value = rg.value; previewAuto(); });
+  n.addEventListener('input', ()=>{ rg.value = n.value; previewAuto(); });
+});
+function previewAuto(){
+  const f = $('#fAuto'), lo = +f.elements.lo.value, hi = +f.elements.hi.value;
+  const ok = lo < hi;
+  $('#autoPreview').innerHTML = ok
+    ? `Vai <b>ligar</b> quando o solo ficar <b>abaixo de ${lo}%</b> e <b>desligar</b> ao chegar em <b>${hi}%</b>. Entre ${lo}% e ${hi - 1}% mantém o estado. Potência: <b>${esc($('[data-veltxt="vel"]').textContent)}</b>.`
+    : `<b style="color:var(--red)">O limite que liga (${lo}%) precisa ser menor que o que desliga (${hi}%).</b>`;
+}
+function preencherAuto(){
+  if (!E || sujo.fAuto) return; const c = E.config, f = $('#fAuto');
+  f.elements.lo.value = c.lo; f.elements.hi.value = c.hi;
+  f.querySelector('[data-par="lo"]').value = c.lo; f.querySelector('[data-par="hi"]').value = c.hi;
+  velPreencher('vel', c.vel); previewAuto();
+}
+$('#fAuto').addEventListener('submit', async e=>{
+  e.preventDefault(); const f = e.target;
+  const lo = +f.elements.lo.value, hi = +f.elements.hi.value;
+  if (!(lo < hi)){ toast('O limite que liga precisa ser menor que o que desliga.','err','alert'); return; }
+  await salvarCfg({lo, hi, vel: velLer('vel')}, 'Configuração do automático', 'alterou o modo automático', 'fAuto');
 });
 
-/* ---------------- graficos ---------------- */
-function grafico(serie, chave, {cor='#2F8A57', min=null, max=null, linhas=[], bomba=false}={}){
-  const pts = serie.filter(p=>p[chave]!==null && p[chave]!==undefined);
-  if (pts.length<2) return '<div class="empty" style="margin-top:8px">Aguardando leituras…</div>';
-  const W=300,H=90,P=4; const t0=pts[0].em, t1=pts[pts.length-1].em||t0+1;
-  let lo = min ?? Math.min(...pts.map(p=>p[chave])), hi = max ?? Math.max(...pts.map(p=>p[chave]));
-  if (hi-lo<1){ hi+=1; lo-=1; }
-  const x = t => P + (W-2*P) * ((t - t0) / Math.max(1, t1 - t0));
-  const y = v => H-P - (H-2*P) * ((v - lo) / (hi - lo));
-  const d = pts.map((p,i)=>`${i?'L':'M'}${x(p.em).toFixed(1)},${y(p[chave]).toFixed(1)}`).join('');
-  let extra = '';
-  if (bomba) pts.forEach((p,i)=>{ if (p.bomba && i<pts.length-1){ extra += `<rect x="${x(p.em)}" y="0" width="${Math.max(1,x(pts[i+1].em)-x(p.em))}" height="${H}" fill="#7DB8F0" opacity=".18"/>`; } });
-  linhas.forEach(([v,c])=>{ if (v>lo && v<hi) extra += `<line x1="0" x2="${W}" y1="${y(v)}" y2="${y(v)}" stroke="${c}" stroke-dasharray="4 4" stroke-width="1"/>`; });
-  return `<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${extra}
-    <path d="${d}L${x(t1)},${H}L${x(t0)},${H}Z" fill="${cor}" opacity=".12"/>
-    <path d="${d}" fill="none" stroke="${cor}" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>
-    <div class="scalelbl"><span>${hora(t0)}</span><span>mín ${num(Math.min(...pts.map(p=>p[chave])),1)} · máx ${num(Math.max(...pts.map(p=>p[chave])),1)}</span><span>${hora(t1)}</span></div>`;
+// rega manual: duracao padrao com chips 2..10 + valor livre com alerta
+const DUR_OPCOES = [2,3,5,7,10];
+$('#durPadChips').innerHTML = DUR_OPCOES.map(v=>`<button type="button" class="chip" data-dp="${v}">${v} s</button>`).join('');
+$('#durPadChips').onclick = e=>{ const b=e.target.closest('[data-dp]'); if(!b) return; $('#fManual').elements.duracao.value=b.dataset.dp; sujo.fManual=true; avisoDurPad(); };
+function avisoDurPad(){
+  const v = +$('#fManual').elements.duracao.value;
+  $('#durPadWarn').style.display = v>10 ? 'block' : 'none';
+  $$('#durPadChips .chip').forEach(b=>b.classList.toggle('on', +b.dataset.dp===v));
 }
+function preencherManual(){
+  if (!E || sujo.fManual) return; const c = E.config, f = $('#fManual');
+  f.elements.duracao.value = c.duracao; f.elements.protecao.value = c.protecao;
+  velPreencher('velm', c.velm); avisoDurPad();
+}
+$('#fManual').addEventListener('submit', async e=>{
+  e.preventDefault(); const f = e.target;
+  const d = +f.elements.duracao.value;
+  if (!d || d < 2){ toast('A duração mínima é 2 segundos.','err','alert'); return; }
+  if (d > 600){ toast('A duração máxima é 600 segundos.','err','alert'); return; }
+  if (d > 10 && !(await confirmar('Duração padrão acima de 10 s', `Você definiu <b>${d} s</b> como padrão. O recomendado é até <b>10 s</b> para não encharcar. Salvar mesmo assim?`, 'Salvar'))) return;
+  await salvarCfg({duracao:d, velm: velLer('velm'), protecao: f.elements.protecao.value}, 'Configuração da rega manual', 'alterou a rega manual', 'fManual');
+});
+
+// comunicacao
+function preencherCom(){ if (!E || sujo.fCom) return; $('#fCom').elements.intervalo.value = E.config.intervalo; }
+$('#fCom').addEventListener('submit', async e=>{
+  e.preventDefault();
+  await salvarCfg({intervalo: e.target.elements.intervalo.value}, 'Comunicação', 'alterou o intervalo de envio', 'fCom');
+});
+
+// chaves
+$('#swAuto').onclick = async ()=>{
+  if (!E) return;
+  const ligar = E.config.modo !== 0;
+  const ok = await confirmar(ligar ? 'Ligar a rega automática?' : 'Desligar a rega automática?',
+    ligar ? `A bomba vai ligar sozinha quando o solo ficar abaixo de <b>${E.config.lo}%</b> e desligar em <b>${E.config.hi}%</b>.`
+          : 'O regador passa para o <b>modo manual</b>: a bomba só liga quando alguém pedir rega pelo site.',
+    ligar ? 'Ligar automático' : 'Mudar para manual', false);
+  if (ok) await salvarCfg({modo: ligar?0:1}, ligar?'Modo automático':'Modo manual', ligar?'ligou a rega automática':'desligou a rega automática (modo manual)');
+};
+$('#swBloq').onclick = async ()=>{
+  if (!E) return;
+  const bloquear = E.config.modo !== 2;
+  const ok = await confirmar(bloquear?'Bloquear a bomba?':'Desbloquear a bomba?',
+    bloquear ? 'Nada vai ligar a bomba: nem o automático, nem pedidos. A fila fica esperando.' : 'O regador volta para o <b>modo manual</b>. Ligue o automático na aba Automático se quiser.',
+    bloquear?'Bloquear':'Desbloquear', bloquear);
+  if (ok) await salvarCfg({modo: bloquear?2:1}, bloquear?'Bomba bloqueada':'Bomba desbloqueada', bloquear?'bloqueou a bomba (modo desligado)':'desbloqueou a bomba');
+};
+
+// pedido de rega: chips 2..10 + valor livre
+$('#durChips').innerHTML = DUR_OPCOES.map(v=>`<button type="button" class="chip" data-d="${v}">${v} s</button>`).join('');
+$('#durChips').onclick = e=>{ const b=e.target.closest('[data-d]'); if(!b) return; durEscolhida=+b.dataset.d; $('#durInput').value=durEscolhida; marcarDur(); };
+$('#durInput').oninput = ()=>{ durEscolhida = parseInt($('#durInput').value)||null; marcarDur(); };
+function marcarDur(){
+  $$('#durChips .chip').forEach(b=>b.classList.toggle('on', +b.dataset.d===durEscolhida));
+  $('#durWarn').style.display = durEscolhida>10 ? 'block':'none';
+  $('#durWarn').textContent = durEscolhida>600 ? 'Máximo 600 s.' : 'Acima de 10 s — vai pedir confirmação.';
+  if (E) $('#regaPreview').innerHTML = `Vai regar <b>${durEscolhida||'-'} s</b> com potência <b>${esc(velTxt(E.config.velm))}</b>${E.config.velm<0&&E.leitura?` (agora ${255-Math.floor(E.leitura.pot/4)}/255)`:''}.`;
+}
+
+/* ================= graficos ================= */
+function cor(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+function ticks(lo, hi, n=4){
+  const passo0 = (hi-lo)/n, mag = Math.pow(10, Math.floor(Math.log10(passo0||1)));
+  const passo = [1,2,2.5,5,10].map(m=>m*mag).find(p=>p>=passo0) || passo0;
+  const a = Math.floor(lo/passo)*passo, b = Math.ceil(hi/passo)*passo; const out=[];
+  for (let v=a; v<=b+1e-9; v+=passo) out.push(+v.toFixed(6));
+  return out;
+}
+// desenha um grafico com eixo Y, grade, horas, valor atual, zona da bomba e dica ao tocar/passar o mouse
+function grafico(el, serie, campo, o){
+  const pts = serie.filter(p=>p[campo]!==null && p[campo]!==undefined);
+  const W = Math.max(260, el.clientWidth || 300), H = o.altura || 190;
+  const L = 42, R = 10, T = 12, B = 26;
+  if (pts.length < 1){ el.innerHTML = '<div class="empty">Sem leituras nesse período</div>'; return; }
+  // eixo X começa na primeira leitura do período (sem espaço vazio quando ainda há poucos dados)
+  const t0 = Math.max(o.inicio ?? pts[0].em, pts[0].em - 1), t1 = Math.max(o.fim ?? pts[pts.length-1].em, t0 + 60);
+  let vals = pts.map(p=>p[campo]);
+  let lo = o.min ?? Math.min(...vals), hi = o.max ?? Math.max(...vals);
+  if (o.min===undefined || o.max===undefined){ const pad = Math.max((hi-lo)*0.15, o.padMin||1); if (o.min===undefined) lo -= pad; if (o.max===undefined) hi += pad; }
+  const tk = ticks(lo, hi); lo = Math.min(lo, tk[0]); hi = Math.max(hi, tk[tk.length-1]);
+  if (o.min!==undefined) lo = o.min; if (o.max!==undefined) hi = o.max;
+  const x = t => L + (W-L-R) * ((t - t0) / Math.max(1, t1 - t0));
+  const y = v => T + (H-T-B) * (1 - (v - lo) / Math.max(1e-9, hi - lo));
+  const linhaCor = cor('--line'), mut = cor('--mut');
+  let s = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`;
+  // zona da bomba ligada
+  if (o.bomba){ for (let i=0;i<pts.length;i++){ if (pts[i].bomba){ const xa = x(pts[i].em), xb = i<pts.length-1 ? x(pts[i+1].em) : x(t1); s += `<rect x="${xa}" y="${T}" width="${Math.max(2,xb-xa)}" height="${H-T-B}" fill="#4B9BE8" opacity=".14"/>`; } } }
+  // grade e eixo Y
+  tk.filter(v=>v>=lo-1e-9 && v<=hi+1e-9).forEach(v=>{ s += `<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="${linhaCor}" stroke-width="1"/><text x="${L-6}" y="${y(v)+4}" text-anchor="end">${num(v, o.dec??0)}${o.un||''}</text>`; });
+  // eixo X (4 marcas de hora)
+  for (let i=0;i<=3;i++){ const t = t0 + (t1-t0)*i/3; s += `<text x="${x(t)}" y="${H-8}" text-anchor="${i===0?'start':i===3?'end':'middle'}">${(t1-t0)>86400*1.5? new Date(t*1000).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+' '+horaCurta(t) : (t1-t0)<600 ? hora(t) : horaCurta(t)}</text>`; }
+  // linhas de referencia (limites)
+  (o.linhas||[]).forEach(([v,c,txt])=>{ if (v>=lo && v<=hi){ s += `<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="${c}" stroke-dasharray="5 4" stroke-width="1.5"/><text x="${L+4}" y="${y(v)-4}" text-anchor="start" style="fill:${c};font-weight:700">${esc(txt)}</text>`; } });
+  // area + linha
+  const d = pts.map((p,i)=>`${i?'L':'M'}${x(p.em).toFixed(1)},${y(p[campo]).toFixed(1)}`).join('');
+  if (pts.length>1) s += `<path d="${d}L${x(pts[pts.length-1].em)},${H-B}L${x(pts[0].em)},${H-B}Z" fill="${o.cor}" opacity=".12"/>`;
+  s += `<path d="${d}" fill="none" stroke="${o.cor}" stroke-width="2.2" stroke-linejoin="round"/>`;
+  if (pts.length <= 60) pts.forEach(p=>{ s += `<circle cx="${x(p.em)}" cy="${y(p[campo])}" r="2.6" fill="${o.cor}"/>`; });
+  const u = pts[pts.length-1]; s += `<circle cx="${x(u.em)}" cy="${y(u[campo])}" r="4.5" fill="${o.cor}" stroke="${cor('--card')}" stroke-width="2"/>`;
+  s += `<line class="cur" x1="0" x2="0" y1="${T}" y2="${H-B}" stroke="${mut}" stroke-width="1" style="display:none"/><circle class="curp" r="5" fill="${o.cor}" stroke="${cor('--card')}" stroke-width="2" style="display:none"/></svg><div class="tip"></div>`;
+  el.innerHTML = s;
+  const svg = el.querySelector('svg'), tip = el.querySelector('.tip'), cl = svg.querySelector('.cur'), cp = svg.querySelector('.curp');
+  const mover = ev => {
+    const r = svg.getBoundingClientRect(); const mx = (ev.touches?ev.touches[0].clientX:ev.clientX) - r.left;
+    const t = t0 + (mx - L) / (W-L-R) * (t1 - t0);
+    let best = pts[0]; for (const p of pts) if (Math.abs(p.em - t) < Math.abs(best.em - t)) best = p;
+    const px = x(best.em), py = y(best[campo]);
+    cl.setAttribute('x1',px); cl.setAttribute('x2',px); cl.style.display=''; cp.setAttribute('cx',px); cp.setAttribute('cy',py); cp.style.display='';
+    tip.style.display='block'; tip.style.left = Math.min(Math.max(px, 60), W-60)+'px'; tip.style.top = (py-8)+'px';
+    tip.innerHTML = `${num(best[campo], o.dec??0)}${o.un||''} · ${hora(best.em)}${o.bomba && best.bomba ? ' · bomba ON':''}`;
+  };
+  const sair = ()=>{ tip.style.display='none'; cl.style.display='none'; cp.style.display='none'; };
+  svg.addEventListener('pointermove', mover); svg.addEventListener('pointerdown', mover); svg.addEventListener('pointerleave', sair);
+}
+function cardGrafico(id, titulo, unidade, valor, legenda, full){
+  return `<div class="card chartcard ${full?'full':''}"><div class="hd"><b>${titulo}</b><span class="now">${valor}<small>${unidade}</small></span></div><div class="cwrap" id="${id}"></div>${legenda?`<div class="legend">${legenda}</div>`:''}</div>`;
+}
+const JANELAS = [[15,'15 min'],[60,'1 h'],[360,'6 h'],[1440,'24 h'],[10080,'7 dias']];
+function chipsJanela(el, atual, cb){
+  el.innerHTML = JANELAS.map(([m,t])=>`<button class="chip ${m===atual?'on':''}" data-j="${m}">${t}</button>`).join('');
+  el.onclick = e=>{ const b=e.target.closest('[data-j]'); if(!b) return; cb(+b.dataset.j); };
+}
+function setJanelaHw(m){ janelaHw=m; gravar('janelaHw',m); chipsJanela($('#janelasHw'), janelaHw, setJanelaHw); carregarSerieHw(); }
+chipsJanela($('#janelas'), janela, function cb(m){ janela=m; gravar('janela',m); chipsJanela($('#janelas'), janela, cb); carregarSerie(); });
+chipsJanela($('#janelasHw'), janelaHw, setJanelaHw);
+async function carregarSerie(){ try { SERIE = await (await fetch(`/api/serie?min=${janela}`)).json(); desenharGraficos(); } catch(e){} }
+async function carregarSerieHw(){ try { SERIEHW = await (await fetch(`/api/serie?min=${janelaHw}`)).json(); desenharGraficosHw(); } catch(e){} }
+function desenharGraficos(){
+  if (!SERIE || !E) return; const c = E.config, L = E.leitura || {}, S = SERIE.pontos, base = {inicio:SERIE.inicio, fim:SERIE.fim};
+  const leg = `<span><i style="background:#2F8A57"></i>umidade</span><span><i style="background:#D64545"></i>liga (${c.lo}%)</span><span><i style="background:#30A46C"></i>desliga (${c.hi}%)</span><span><i style="background:#4B9BE8;opacity:.5;height:10px"></i>bomba ligada</span>`;
+  $('#charts').innerHTML = cardGrafico('gSolo','Umidade do solo','%', L.solo??'-', leg, true) +
+    cardGrafico('gTemp','Temperatura','°C', L.temp!==undefined?num(L.temp,1):'-', `<span>mín ${num(Math.min(...S.map(p=>p.temp).filter(v=>v!==null)),1)}° · máx ${num(Math.max(...S.map(p=>p.temp).filter(v=>v!==null)),1)}° no período</span>`) +
+    cardGrafico('gLuz','Luz (LDR)','', L.ldr??'-', '<span>&gt; 650 sol · 400–650 nublado · &lt; 400 noite</span>');
+  grafico($('#gSolo'), S, 'solo', {...base, cor:'#2F8A57', min:0, max:100, un:'%', bomba:true, altura:220, linhas:[[c.lo,'#D64545',`liga < ${c.lo}%`],[c.hi,'#30A46C',`desliga ≥ ${c.hi}%`]]});
+  grafico($('#gTemp'), S, 'temp', {...base, cor:'#E0892B', un:'°', dec:1, padMin:1});
+  grafico($('#gLuz'), S, 'ldr', {...base, cor:'#C9A21B', min:0, max:1023, linhas:[[650,'#C9A21B','650'],[400,'#8A8A8A','400']]});
+  // grafico pequeno na aba automatico
+  $('#autoChartCard').innerHTML = `<div class="hd"><b>Solo e bomba (${JANELAS.find(j=>j[0]===janela)?.[1]||''})</b><span class="now">${L.solo??'-'}<small>%</small></span></div><div class="cwrap" id="gAuto"></div><div class="legend">${leg}</div>`;
+  grafico($('#gAuto'), S, 'solo', {...base, cor:'#2F8A57', min:0, max:100, un:'%', bomba:true, altura:170, linhas:[[c.lo,'#D64545',`liga`],[c.hi,'#30A46C',`desliga`]]});
+}
+function desenharGraficosHw(){
+  if (!SERIEHW || !E) return; const D = E.dispositivo||{}, S = SERIEHW.pontos, base = {inicio:SERIEHW.inicio, fim:SERIEHW.fim};
+  S.forEach(p=>{ p.lmx_ms = p.lmx!==null && p.lmx!==undefined ? p.lmx/1000 : null; p.vcc_v = p.vcc ? p.vcc/1000 : null; });
+  $('#chartsHw').innerHTML = cardGrafico('gCarga','Carga da CPU','%', D.ocu??'-', '<span>média de cada envio · atenção 50% · sobrecarga 80%</span>') +
+    cardGrafico('gLmx','Volta mais lenta do loop','ms', D.lmx!==undefined?num(D.lmx/1000,1):'-', '<span>atenção 25 ms · sobrecarga 50 ms</span>') +
+    cardGrafico('gRam','RAM livre','bytes', D.ram??'-', '<span>de 2048 bytes · atenção abaixo de 300</span>') +
+    cardGrafico('gVcc','Alimentação (Vcc)','V', D.vcc?num(D.vcc/1000,2):'-', '<span>ideal ~5,0 V · atenção abaixo de 4,6 V</span>');
+  grafico($('#gCarga'), S, 'carga', {...base, cor:'#7A5AF8', min:0, max:100, un:'%', linhas:[[50,'#E2AE2C','atenção'],[80,'#D64545','sobrecarga']]});
+  grafico($('#gLmx'), S, 'lmx_ms', {...base, cor:'#E0892B', min:0, un:' ms', dec:1, linhas:[[25,'#E2AE2C','25 ms'],[50,'#D64545','50 ms']]});
+  grafico($('#gRam'), S, 'ram', {...base, cor:'#2F8A57', min:0, max:2048, linhas:[[300,'#E2AE2C','300'],[150,'#D64545','150']]});
+  grafico($('#gVcc'), S, 'vcc_v', {...base, cor:'#4B9BE8', dec:2, un:' V', padMin:.1, linhas:[[4.6,'#E2AE2C','4,6 V']]});
+}
+let rzT; window.addEventListener('resize', ()=>{ clearTimeout(rzT); rzT = setTimeout(()=>{ desenharGraficos(); desenharGraficosHw(); }, 150); });
+
+/* ================= render ================= */
+function luzTxt(l){ return l>650?'Dia ensolarado':l>=400?'Dia nublado':'Noite'; }
+function soloTxt(s,c){ return s<c.lo?'Seco':(s<c.hi?'Meio úmido':'Molhado'); }
 function escala(el, lbl, solo, lo, hi){
-  let h=''; for(let i=0;i<20;i++){ const v=i*5; const c = v<lo?'s':(v<hi?'m':'w'); const cur = solo!==null && solo>=v && solo<v+5 || (solo===100 && i===19); h+=`<i class="${c}${cur?' cur':''}"></i>`; }
+  let h=''; for(let i=0;i<20;i++){ const v=i*5; const k = v<lo?'s':(v<hi?'m':'w'); const cur = solo!==null && solo!==undefined && ((solo>=v && solo<v+5) || (solo===100 && i===19)); h+=`<i class="${k}${cur?' cur':''}"></i>`; }
   el.innerHTML = h;
   lbl.innerHTML = `<span>0% seco</span><span>liga &lt; ${lo}%</span><span>desliga ≥ ${hi}%</span><span>100%</span>`;
 }
-
-/* ---------------- render ---------------- */
-function luzTxt(l){ return l>650?'Dia ensolarado':l>=400?'Dia nublado':'Noite'; }
-function soloTxt(s,c){ return s<c.lo?'Seco · bomba liga':(s<c.hi?'Meio úmido · mantém o estado':'Molhado · bomba desliga'); }
+// descreve o que o automatico esta fazendo agora
+function estadoAuto(){
+  const c = E.config, L = E.leitura, D = E.dispositivo||{};
+  if (c.modo===2) return {t:'Bomba bloqueada', s:'Modo desligado: nada liga a bomba. Desbloqueie em Ajustes.', pill:['off','Bloqueado'], cls:'off'};
+  if (c.modo===1) return {t:'Modo manual', s:'A rega automática está desligada. A bomba só liga quando alguém pedir rega pelo site.', pill:['warn','Manual'], cls:'manual'};
+  if (!E.online) return {t:'Automático (regador offline)', s:'O Arduino continua regando sozinho com a última configuração; o painel volta a mostrar quando ele reconectar.', pill:['off','Offline'], cls:''};
+  if (!L) return {t:'Automático ativo', s:'Aguardando a primeira leitura…', pill:['on','Ativo'], cls:''};
+  if (L.erros & 2) return {t:'Automático bloqueado por segurança', s:'O sensor de solo está instável (fio solto?). A bomba não liga até a leitura normalizar.', pill:['off','Sensor'], cls:'off'};
+  if (D.pausa) return {t:'Automático pausado', s:`Alguém pediu PARAR. Volta sozinho em ${dur(D.pausa)} — ou toque em “Retomar automático”.`, pill:['warn','Pausado'], cls:'manual'};
+  if (L.bomba && L.motivo===2) return {t:'Rega manual em andamento', s:`Pedido do site · faltam ${D.restante||0} s. Depois o automático continua.`, pill:['warn','Rega manual'], cls:''};
+  if (L.bomba) return {t:'Regando automaticamente', s:`Solo em ${L.solo}% · a bomba desliga sozinha ao chegar em ${c.hi}% · potência ${L.vel}/255 (${pct(L.vel)}).`, pill:['on','Regando'], cls:'', pulse:true};
+  if (L.solo < c.lo) return {t:'Solo seco — vai ligar', s:`Solo em ${L.solo}%, abaixo de ${c.lo}%. A bomba liga na próxima leitura (1 s).`, pill:['warn','Ligando'], cls:''};
+  if (L.solo < c.hi) return {t:'Monitorando', s:`Solo em ${L.solo}% (zona de espera). A bomba liga quando cair abaixo de ${c.lo}%.`, pill:['on','Aguardando'], cls:''};
+  return {t:'Solo molhado', s:`Solo em ${L.solo}% (≥ ${c.hi}%). Bomba desligada até o solo secar abaixo de ${c.lo}%.`, pill:['on','Satisfeito'], cls:''};
+}
+function hystHtml(solo, lo, hi, escuro){
+  const p = v => Math.max(0, Math.min(100, v));
+  return `<div class="bar"><i class="z1" style="width:${lo}%"></i><i class="z2" style="width:${hi-lo}%"></i><i class="z3" style="width:${100-hi}%"></i></div>
+    <span class="mk" style="left:${lo}%"></span><span class="mk" style="left:${hi}%"></span>
+    ${solo!==null&&solo!==undefined?`<span class="now" style="left:${p(solo)}%">${solo}%</span>`:''}
+    <div class="lbls"><span style="left:0;transform:none">0%</span><span style="left:${lo}%">${lo}%</span><span style="left:${hi}%">${hi}%</span><span style="left:100%;transform:translateX(-100%)">100%</span></div>`;
+}
 function renderUsuario(){
   const n = NOME || 'visitante';
   $('#avatar').textContent = ini(n); $('#sideAvatar').textContent = ini(n); $('#sideNome').textContent = n;
@@ -715,74 +1107,38 @@ function renderUsuario(){
 }
 function renderBanners(){
   const b = [];
-  if (!E) { b.push(`<div class="banner err">${ic('wifi')}<div><b>Sem conexão com o servidor.</b> Tentando de novo…</div></div>`); }
+  if (!E){ if (falhas >= 2) b.push(`<div class="banner err">${ic('wifi')}<div><b>Sem conexão com o servidor.</b> Tentando de novo…</div></div>`); }
   else {
-    if (!E.online) b.push(`<div class="banner err">${ic('wifi')}<div><b>Regador offline.</b> ${E.dispositivo.visto?`Último contato ${rel(E.dispositivo.visto)}.`:'Ainda não conectou.'} Os pedidos ficam guardados na fila e são entregues quando ele voltar; o Arduino guarda as leituras e envia depois.</div></div>`);
+    if (!E.online) b.push(`<div class="banner err">${ic('wifi')}<div><b>Regador offline.</b> ${E.dispositivo.visto?`Último contato ${rel(E.dispositivo.visto)}.`:'Ainda não conectou.'} Os pedidos ficam na fila; o Arduino guarda as leituras e envia quando voltar.</div></div>`);
     if (E.ocupado) b.push(`<div class="banner warn">${ic('alert')}<div><b>${esc(E.ocupado.quem)} já está enviando dados ao regador automático</b> (${esc(E.ocupado.o_que)}). ${E.fila.length>1?`Há ${E.fila.length} pedidos na fila. `:''}Novos pedidos de rega entram na fila; configurações aguardam a confirmação do Arduino.</div></div>`);
     if (E.leitura && E.leitura.erros) b.push(`<div class="banner err">${ic('alert')}<div><b>Sensor com problema:</b> ${Object.entries(E.textos.erros).filter(([k])=>E.leitura.erros & k).map(([,v])=>esc(v)).join('; ')}${(E.leitura.erros&2)?' — por segurança a rega automática fica desligada.':''}</div></div>`);
+    if (E.hw && E.hw.nivel===2) b.push(`<div class="banner err">${ic('chip')}<div><b>Arduino sobrecarregado:</b> ${E.hw.motivos.map(esc).join('; ')}</div></div>`);
   }
   $('#banners').innerHTML = b.join('');
 }
-function renderInicio(){
-  const L = E.leitura, c = E.config, D = E.dispositivo || {};
-  const dias = new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'});
-  $('#heroData').innerHTML = ic('clock') + ' ' + esc(dias.charAt(0).toUpperCase()+dias.slice(1)) + ' · ' + new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-  $('#heroPills').innerHTML = `<span class="pill gold">${ic('leaf')} MODO ${esc(E.textos.modos[c.modo].toUpperCase())}</span>` +
-    `<span class="pill ${E.online?'on':'off'}"><span class="dot"></span>${E.online?'Regador online':'Regador offline'}</span>` +
-    `<span class="pill ghost">${ic('users')} ${E.presenca.length}</span>`;
-  const s = L ? L.solo : null;
-  $('#ringN').textContent = s ?? '--';
-  $('#ringArc').setAttribute('stroke-dashoffset', 201 - 201*Math.min(100,Math.max(0,s||0))/100);
-  $('#heroSolo').innerHTML = `${s ?? '--'}<small>%</small>`;
-  $('#heroSoloTxt').textContent = L ? `${soloTxt(s,c)} · raw ${L.solo_raw} · ${rel(L.em)}` : 'aguardando a primeira leitura do Arduino';
-  $('#qkFila').textContent = E.fila.length ? `${E.fila.length} pedido(s) na fila` : 'fila vazia';
-  // painel "campo" (desktop)
-  $('#wxTemp').textContent = L ? num(L.temp,1)+'°' : '--°';
-  $('#wxTempSub').textContent = E.hoje.tmin!==null ? `mín ${num(E.hoje.tmin,1)}° / máx ${num(E.hoje.tmax,1)}° hoje` : '';
-  $('#wxLuz').textContent = L ? luzTxt(L.ldr) : '-';
-  $('#wxLdr').textContent = L ? L.ldr : '-';
-  $('#wxBomba').textContent = L ? (L.bomba?'LIGADA':'desligada') : '-';
-  $('#wxVel').textContent = L ? (L.bomba ? L.vel : '0') : '-';
-  escala($('#wxScale'), $('#wxScaleLbl'), s, c.lo, c.hi);
-  escala($('#scale'), $('#scaleLbl'), s, c.lo, c.hi);
-
-  // tiles
-  const P = E.protecao, rr = D.restante||0, pz = D.pausa||0;
-  const bombaSub = !L ? 'sem dados' : L.bomba ? `${esc(E.textos.motivos[L.motivo]||'')}${rr?` · faltam ${rr} s`:''}` : (pz?`automático pausado (${dur(pz)})`:'aguardando condição');
-  const t = [];
-  t.push(`<div class="tile tall"><div style="display:flex;justify-content:space-between"><span class="cap">Bomba d'água</span><div class="dots">${[0,1,2,3,4].map(i=>`<i class="${L&&L.bomba&&i<=Math.round((L.vel||0)/64)?'on':''}"></i>`).join('')}</div></div>
-    <div><div class="val">${L?(L.bomba?'Ligada':'Desligada'):'-'}</div><p style="margin-top:6px">${bombaSub}</p></div>
-    <div><p>Velocidade ${L?(L.bomba?L.vel:0):'-'}/255 · pot ${L?L.pot:'-'}</p><p>${E.hoje.regas} rega(s) hoje · ${dur(E.hoje.bomba_s)} ligada</p></div></div>`);
-  t.push(`<div class="tile blue"><div style="display:flex;justify-content:space-between;align-items:center"><span class="ic">${ic('thermo')}</span><span class="badge ${L&&L.erros&1?'red':''}">${L?luzTxt(L.ldr):'-'}</span></div>
-    <div><div class="val">${L?num(L.temp,1)+'°':'--'}</div><p>Temperatura · LDR ${L?L.ldr:'-'}</p></div></div>`);
-  t.push(`<div class="tile ${P.ativa?'gold':''}"><span class="ic">${ic('shield')}</span><div><h3>${P.ativa?'Proteção ativa':'Rega liberada'}</h3><p>${P.ativa?esc(P.motivos[0])+(P.motivos.length>1?` (+${P.motivos.length-1})`:''):'Sem rega recente, solo não encharcado'}</p></div></div>`);
-  t.push(`<div class="tile dark" data-ir="regas" style="cursor:pointer"><span class="ic">${ic('list')}</span><div><h3>Fila de regas</h3><p>${E.fila.length?`${E.fila.length} pedido(s) · próximo: ${esc(E.fila[0].descricao)}`:'Nenhum pedido aguardando'}</p></div></div>`);
-  t.push(`<div class="tile dark wide" style="background:var(--g600)"><span class="ic">${ic('drop')}</span><div class="grow" style="margin-left:12px"><span class="cap" style="color:#BFE3CB">Ação rápida</span><h3>Regar ${c.duracao} s agora</h3><p>todos os conectados serão avisados</p></div><button class="btn white" data-acao="regar">Regar</button></div>`);
-  $('#tiles').innerHTML = t.join('');
-
-  // saude
-  const passos = [
-    ['Arduino', E.online?'ok':'bad', E.online?'online':'offline'],
-    ['Sensores', L && !L.erros ? 'ok' : (L?'bad':'wait'), L&&L.erros?'erro':'ok'],
-    ['Config', E.config_aplicada?'ok':'wait', E.config_aplicada?`v${c.versao}`:'pendente'],
-    ['Buffer', (D.buffer||0)===0?'ok':'wait', `${D.buffer||0} leit.`],
-    ['Fila', E.fila.length?'wait':'ok', E.fila.length?`${E.fila.length} ped.`:'vazia'],
+function regaHtml(r, compacto){
+  const T = E.textos, auto = r.motivo===1, man = r.motivo===2;
+  const icoBg = man ? 'var(--gold)' : auto ? 'var(--g600)' : 'var(--line)', icoCor = man ? '#3D2C00' : auto ? '#fff' : 'var(--mut)';
+  const tipo = man ? `Manual${r.quem?' · '+esc(r.quem):''}` : auto ? 'Automática' : 'Registrada offline';
+  const specs = [
+    ['Duração', r.em_andamento ? `${dur(r.duracao_real)} …` : dur(r.duracao_real) + (r.duracao_pedida?` <span class="muted">(pedida ${r.duracao_pedida} s)</span>`:'')],
+    ['Potência', r.vel!==null&&r.vel!==undefined ? `${r.vel}/255 <span class="muted">(${pct(r.vel)})</span>` : '-'],
+    ['Solo', r.solo_ini!==null&&r.solo_ini!==undefined ? `${r.solo_ini}% → ${r.solo_fim!==null&&r.solo_fim!==undefined?r.solo_fim+'%':'…'}` : '-'],
+    ['Temperatura', r.temp_ini!==null&&r.temp_ini!==undefined ? num(r.temp_ini,1)+' °C' : '-'],
   ];
-  $('#steps').innerHTML = passos.map(([n,st,sub])=>`<div class="step ${st}"><b>${ic(st==='ok'?'check':st==='bad'?'x':'clock')}</b>${n}<span style="font-weight:500">${sub}</span></div>`).join('');
-  $('#saudeTxt').textContent = D.visto ? `último contato ${rel(D.visto)}` : '';
-
-  $('#homeFila').innerHTML = filaHtml(E.fila.slice(0,3), false);
-  $('#homeFeed').innerHTML = feedHtml(feed.slice(-6).reverse());
-  const nf = E.fila.length; const fc = $('#fabCnt'); if (fc){ fc.style.display = nf?'block':'none'; fc.textContent = nf; }
-  $('#sideModo').textContent = E.textos.modos[c.modo].replace(/^./,m=>m.toUpperCase());
+  if (auto) specs.push(['Limites', `liga &lt; ${r.lo}% · desliga ≥ ${r.hi}%`]);
+  return `<div class="rega"><div class="hd"><span class="ico" style="background:${icoBg};color:${icoCor}">${ic(man?'drop':auto?'auto':'pump')}</span>
+    <div class="grow"><div style="font-weight:700">${tipo}</div><div class="muted" style="font-size:.76rem">${dataHora(r.inicio)}${r.fim?' – '+hora(r.fim):''}</div></div>
+    ${r.em_andamento?'<span class="badge gold">regando</span>':''}</div>
+    ${compacto?'':`<div class="specs">${specs.map(([k,v])=>`<div>${k}<b>${v}</b></div>`).join('')}</div>`}</div>`;
 }
 function filaHtml(lista, completo){
   if (!lista.length) return `<div class="empty">${ic('check')} Nenhum pedido na fila</div>`;
   return lista.map(p=>{
     const st = p.status==='entregue' ? '<span class="badge gold">Enviado ao Arduino</span>' : `<span class="badge">Na fila · nº ${p.posicao}</span>`;
-    const canc = completo && p.status==='fila' ? `<button class="btn line" style="min-height:36px;padding:6px 10px" data-acao="cancelar" data-id="${p.id}">${ic('x')}</button>` : '';
+    const canc = completo && p.status==='fila' ? `<button class="btn line sm" data-acao="cancelar" data-id="${p.id}" aria-label="Cancelar">${ic('x')}</button>` : '';
     return `<div class="item"><div class="sq">${p.posicao}<small>${p.tipo==='regar'?p.duracao+'s':p.tipo}</small></div>
-      <div class="grow"><div class="t">${esc(p.descricao.charAt(0).toUpperCase()+p.descricao.slice(1))}</div>
+      <div class="grow"><div class="t">${esc(p.descricao.charAt(0).toUpperCase()+p.descricao.slice(1))}${p.tipo==='regar'&&p.vel!==undefined&&p.vel!==null?` <span class="muted" style="font-weight:500">· ${esc(velTxt(p.vel))}</span>`:''}</div>
       <div class="s">por ${esc(p.quem)} · ${rel(p.criado)}${p.forcado?' · <b style="color:var(--red)">liberado com senha</b>':''}</div></div>${st}${canc}</div>`;
   }).join('');
 }
@@ -791,6 +1147,110 @@ function feedHtml(lista){
   if (!lista.length) return '<div class="empty">Sem atividade ainda</div>';
   return lista.map(e=>`<div class="ev ${esc(e.tipo)}"><span class="k">${ic(EV_IC[e.tipo]||'check')}</span><div><div>${esc(e.msg)}</div><div class="h">${rel(e.em)} · ${hora(e.em)}</div></div></div>`).join('');
 }
+
+function renderInicio(){
+  const L = E.leitura, c = E.config, D = E.dispositivo || {}, A = estadoAuto();
+  const dia = new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'});
+  $('#heroData').innerHTML = ic('clock') + ' ' + esc(dia.charAt(0).toUpperCase()+dia.slice(1)) + ' · ' + horaCurta(agoraS());
+  $('#heroPills').innerHTML = `<span class="pill gold">${ic(c.modo===0?'auto':'drop')} ${c.modo===0?'AUTOMÁTICO':c.modo===1?'MANUAL':'BLOQUEADO'}</span>` +
+    `<span class="pill ${E.online?'on':'off'}"><span class="dot"></span>${E.online?'Regador online':'Regador offline'}</span>` +
+    `<span class="pill ghost">${ic('users')} ${E.presenca.length}</span>`;
+  const s = L ? L.solo : null;
+  $('#ringN').textContent = s ?? '--';
+  $('#ringArc').setAttribute('stroke-dashoffset', 201 - 201*Math.min(100,Math.max(0,s||0))/100);
+  $('#heroSolo').innerHTML = `${s ?? '--'}<small>%</small>`;
+  $('#heroSoloTxt').textContent = L ? `${soloTxt(s,c)} · raw ${L.solo_raw} · ${rel(L.em)}` : 'aguardando a primeira leitura do Arduino';
+  $('#qkAuto').textContent = c.modo===0 ? `ativo · liga < ${c.lo}% · desliga ≥ ${c.hi}%` : c.modo===1 ? 'desligado (modo manual)' : 'bomba bloqueada';
+  $('#qkHw').textContent = E.hw.nivel<0 ? 'sem dados de hardware' : `${E.hw.status} · carga ${D.ocu??'-'}% · RAM livre ${D.ram??'-'} B`;
+  $('#wxTemp').textContent = L ? num(L.temp,1)+'°' : '--°';
+  $('#wxTempSub').textContent = E.hoje.tmin!==null ? `mín ${num(E.hoje.tmin,1)}° / máx ${num(E.hoje.tmax,1)}° hoje` : '';
+  $('#wxLuz').textContent = L ? luzTxt(L.ldr) : '-';
+  $('#wxLdr').textContent = L ? L.ldr : '-';
+  $('#wxBomba').textContent = L ? (L.bomba?'LIGADA':'desligada') : '-';
+  $('#wxVel').textContent = L ? (L.bomba ? pct(L.vel) : '0%') : '-';
+  escala($('#wxScale'), $('#wxScaleLbl'), s, c.lo, c.hi);
+
+  // cartao do modo (automatico em destaque)
+  const mc = $('#modeCard'); mc.className = 'modecard clk ' + A.cls;
+  mc.innerHTML = `<div class="top2"><div style="flex:1;min-width:0">
+      <div class="cap">${c.modo===0?'Rega automática · ligada':c.modo===1?'Rega automática · desligada':'Bomba bloqueada'}</div>
+      <h3>${A.pulse?'<span class="pulse"></span>':''}${esc(A.t)}</h3><div class="st">${esc(A.s)}</div></div>
+      <span class="pill ghost">${ic('cog')} Configurar</span></div>
+    ${c.modo!==2?`<div class="hyst" style="color:#fff">${hystHtml(s, c.lo, c.hi)}</div>
+    <div class="st" style="font-size:.78rem;display:flex;gap:14px;flex-wrap:wrap"><span>Liga &lt; <b>${c.lo}%</b></span><span>Desliga ≥ <b>${c.hi}%</b></span><span>Potência auto <b>${esc(velTxt(c.vel))}</b></span><span>Hoje <b>${E.hoje.regas_auto}</b> rega(s) · <b>${dur(E.hoje.auto_s)}</b></span></div>`:''}`;
+
+  const P = E.protecao, rr = D.restante||0, pz = D.pausa||0;
+  const bombaSub = !L ? 'sem dados' : L.bomba ? `${esc(E.textos.motivos[L.motivo]||'')}${rr?` · faltam ${rr} s`:''}` : (pz?`automático pausado (${dur(pz)})`:'aguardando condição');
+  const H = E.hw;
+  const t = [];
+  t.push(`<div class="tile tall"><div style="display:flex;justify-content:space-between"><span class="cap">Bomba d'água</span><div class="dots">${[0,1,2,3,4].map(i=>`<i class="${L&&L.bomba&&i<=Math.round((L.vel||0)/64)?'on':''}"></i>`).join('')}</div></div>
+    <div><div class="val">${L?(L.bomba?'Ligada':'Desligada'):'-'}</div><p style="margin-top:6px">${bombaSub}</p></div>
+    <div><p>Potência ${L?(L.bomba?`${L.vel}/255 (${pct(L.vel)})`:'0'):'-'} · pot ${L?L.pot:'-'}</p><p>${E.hoje.regas} rega(s) hoje · ${dur(E.hoje.bomba_s)} ligada</p></div></div>`);
+  t.push(`<div class="tile blue clk" data-ir="sensores"><div style="display:flex;justify-content:space-between;align-items:center"><span class="ic">${ic('thermo')}</span><span class="badge blue">${L?luzTxt(L.ldr):'-'}</span></div>
+    <div><div class="val">${L?num(L.temp,1)+'°':'--'}</div><p>Temperatura · LDR ${L?L.ldr:'-'}</p></div></div>`);
+  t.push(`<div class="tile ${P.ativa?'gold':''} clk" data-ir="regas"><span class="ic">${ic('shield')}</span><div><h3>${P.ativa?'Proteção ativa':'Rega liberada'}</h3><p>${P.ativa?esc(P.motivos[0])+(P.motivos.length>1?` (+${P.motivos.length-1})`:''):'Sem rega recente, solo não encharcado'}</p></div></div>`);
+  t.push(`<div class="tile ${H.nivel===2?'red':H.nivel===1?'gold':''} clk" data-ir="arduino"><span class="ic">${ic('chip')}</span><div><h3>Arduino ${H.nivel<0?'':H.nivel===0?'sem sobrecarga':H.nivel===1?'em atenção':'SOBRECARREGADO'}</h3><p>${H.nivel<0?'sem dados de hardware':`carga ${D.ocu}% · pico ${D.ocm}% · RAM livre ${D.ram} B`}</p></div></div>`);
+  t.push(`<div class="tile dark clk" data-ir="regas"><span class="ic">${ic('list')}</span><div><h3>Fila de regas</h3><p>${E.fila.length?`${E.fila.length} pedido(s) · próximo: ${esc(E.fila[0].descricao)}`:'Nenhum pedido aguardando'}</p></div></div>`);
+  t.push(`<div class="tile dark wide" style="background:var(--g600)"><span class="ic">${ic('drop')}</span><div class="grow" style="margin-left:12px"><span class="cap" style="color:#BFE3CB">Rega manual rápida</span><h3>Regar ${c.duracao} s agora</h3><p>potência ${esc(velTxt(c.velm))} · todos serão avisados</p></div><button class="btn white" data-acao="regar">Regar</button></div>`);
+  $('#tiles').innerHTML = t.join('');
+
+  const passos = [
+    ['Arduino', E.online?'ok':'bad', E.online?'online':'offline'],
+    ['Sensores', L && !L.erros ? 'ok' : (L?'bad':'wait'), L&&L.erros?'erro':'ok'],
+    ['Hardware', H.nivel===0?'ok':H.nivel===2?'bad':'wait', H.status],
+    ['Config', E.config_aplicada?'ok':'wait', E.config_aplicada?`v${c.versao}`:'pendente'],
+    ['Buffer', (D.buffer||0)===0?'ok':'wait', `${D.buffer||0} leit.`],
+    ['Fila', E.fila.length?'wait':'ok', E.fila.length?`${E.fila.length} ped.`:'vazia'],
+  ];
+  $('#steps').innerHTML = passos.map(([n,st,sub])=>`<div class="step ${st}"><b>${ic(st==='ok'?'check':st==='bad'?'x':'clock')}</b>${n}<span style="font-weight:500">${esc(sub)}</span></div>`).join('');
+  $('#saudeTxt').textContent = D.visto ? `último contato ${rel(D.visto)}` : '';
+  $('#homeFila').innerHTML = filaHtml(E.fila.slice(0,3), false);
+  $('#homeRegas').innerHTML = E.regas.length ? E.regas.slice(0,3).map(r=>regaHtml(r)).join('') : '<div class="empty">Nenhuma rega registrada</div>';
+  $('#homeFeed').innerHTML = feedHtml(feed.slice(-6).reverse());
+  const nf = E.fila.length, fc = $('#fabCnt'); if (fc){ fc.style.display = nf?'block':'none'; fc.textContent = nf; }
+  $('#sideModo').textContent = c.modo===0?'Automático':c.modo===1?'Manual':'Bloqueado';
+}
+
+function renderAuto(){
+  const c = E.config, L = E.leitura, D = E.dispositivo||{}, A = estadoAuto(), s = L?L.solo:null;
+  const sw = $('#swAuto'); sw.classList.toggle('on', c.modo===0); sw.setAttribute('aria-checked', c.modo===0);
+  $('#autoTitulo').textContent = c.modo===0 ? 'Rega automática ligada' : c.modo===1 ? 'Rega automática desligada' : 'Bomba bloqueada';
+  $('#autoSub').innerHTML = c.modo===0 ? 'A bomba liga e desliga sozinha pela umidade do solo. Desligue a chave para usar só o modo manual.'
+    : c.modo===1 ? 'Modo manual: a bomba só liga quando alguém pede rega. Ligue a chave para o regador cuidar sozinho.'
+    : 'O modo desligado está ativo em Ajustes. Ligar a chave aqui ativa o automático e desbloqueia a bomba.';
+  $('#autoAviso').innerHTML = E.lock && !E.lock.expirado ? `<div class="banner warn" style="margin-top:12px">${ic('alert')}<div><b>${esc(E.lock.quem)}</b> já está enviando uma configuração (v${E.lock.versao}). Aguarde o Arduino confirmar.</div></div>` : (!E.config_aplicada && E.online ? `<div class="banner warn" style="margin-top:12px">${ic('clock')}<div>Aguardando o Arduino aplicar a configuração v${c.versao} (próximo envio).</div></div>` : '');
+  const ap = $('#autoPill'); ap.className = 'pill '+A.pill[0]; ap.textContent = A.pill[1];
+  $('#autoEstado').innerHTML = `<b>${esc(A.t)}.</b> ${esc(A.s)}`;
+  $('#hyst').innerHTML = hystHtml(s, c.lo, c.hi); $('#hyst').style.color = 'var(--ink)';
+  const zona = s===null?-1 : s<c.lo?0 : s<c.hi?1 : 2;
+  $('#zonas').innerHTML = [
+    ['var(--zs)', `Abaixo de ${c.lo}%`, 'Seco: a bomba LIGA'],
+    ['var(--zm)', `${c.lo}% a ${c.hi-1}%`, 'Mantém o que estava fazendo'],
+    ['var(--zw)', `${c.hi}% ou mais`, 'Molhado: a bomba DESLIGA'],
+  ].map(([cr,t,d],i)=>`<div class="zona ${zona===i?'on':''}"><b><span class="sw" style="background:${cr}"></span>${t}</b>${d}</div>`).join('');
+  $('#autoAcoes').innerHTML = c.modo===0 && D.pausa ? `<button class="btn line full" data-acao="retomar">${ic('play')} Retomar automático agora</button>` : c.modo===0 && L && L.bomba && L.motivo===1 ? `<button class="btn red full" data-acao="parar">${ic('stop')} Parar agora (pausa 5 min)</button>` : '';
+  $('#autoStats').innerHTML = [
+    [E.hoje.regas_auto, 'regas automáticas hoje'], [dur(E.hoje.auto_s), 'tempo de bomba (auto)'],
+    [`${c.lo}% / ${c.hi}%`, 'liga / desliga'], [velTxt(c.vel), 'potência automática'],
+  ].map(([v,t])=>`<div><b>${esc(v)}</b><span>${t}</span></div>`).join('');
+  $('#autoUltima').innerHTML = E.ultima_auto ? regaHtml(E.ultima_auto) : '<div class="empty">Nenhuma rega automática nos últimos 7 dias</div>';
+  preencherAuto();
+}
+
+function renderRegas(){
+  const c = E.config;
+  if (!durEscolhida){ durEscolhida = Math.min(c.duracao, 600); $('#durInput').value = durEscolhida; }
+  marcarDur();
+  const P = E.protecao;
+  $('#protBox').innerHTML = c.modo===2 ? `<div class="banner err">${ic('alert')}<div>Bomba <b>bloqueada</b> (modo desligado): pedidos de rega ficam bloqueados.</div></div>`
+    : P.ativa ? `<div class="banner warn">${ic('shield')}<div><b>Proteção contra encharcar ativa.</b> ${P.motivos.map(esc).join(' · ')}${P.ate?` · libera em ${ate(P.ate)} (${horaCurta(P.ate)})`:''}. Para regar agora será pedida a senha.</div></div>`
+    : `<div class="banner ok">${ic('check')}<div>Rega liberada sem senha.</div></div>`;
+  $('#filaFull').innerHTML = filaHtml(E.fila, true);
+  $('#regasRec').innerHTML = E.regas.length ? E.regas.map(r=>regaHtml(r)).join('') : '<div class="empty">Nenhuma rega registrada</div>';
+  $('#people').innerHTML = E.presenca.length ? E.presenca.map(p=>`<span class="person"><i>${esc(ini(p.nome))}</i>${esc(p.nome)}${p.nome===NOME?' (você)':''}</span>`).join('') : '<span class="muted">ninguém</span>';
+  preencherManual();
+}
+
 function renderSensores(){
   const L = E.leitura, c = E.config, D = E.dispositivo||{};
   $('#senQuando').textContent = L ? `leitura ${rel(L.em)} · a cada ${c.intervalo} s` : '';
@@ -801,100 +1261,124 @@ function renderSensores(){
       ['thermo','Temperatura (TMP36 · A2)', num(L.temp,1)+' °C', (L.erros&1)?'⚠ fora da faixa':'fórmula original do projeto'],
       ['light','Luz (LDR · A0)', L.ldr, luzTxt(L.ldr)+' · >650 sol, 400–650 nublado'],
       ['drop','Umidade do solo (A4)', L.solo+' %', `leitura bruta ${L.solo_raw} · ${soloTxt(L.solo,c)}`],
-      ['knob','Potenciômetro (A5)', L.pot, `velocidade resultante ${255-Math.floor(L.pot/4)}/255${c.vel>=0?' (painel fixou '+c.vel+')':''}`],
-      ['pump','Bomba (D6 · PWM)', L.bomba?'LIGADA':'desligada', `${esc(E.textos.motivos[L.motivo]||'-')} · vel ${L.bomba?L.vel:0}${D.restante?` · faltam ${D.restante} s`:''}${D.pausa?` · auto pausado ${dur(D.pausa)}`:''}`],
+      ['knob','Potenciômetro (A5)', L.pot, `potência resultante ${255-Math.floor(L.pot/4)}/255 (${pct(255-Math.floor(L.pot/4))})`],
+      ['pump','Bomba (D6 · PWM)', L.bomba?'LIGADA':'desligada', `${esc(E.textos.motivos[L.motivo]||'-')} · ${L.bomba?`${L.vel}/255 (${pct(L.vel)})`:'0'}${D.restante?` · faltam ${D.restante} s`:''}${D.pausa?` · auto pausado ${dur(D.pausa)}`:''}`],
     ].map(([i,n,v,sub])=>`<div class="card sen"><div style="display:flex;gap:8px;align-items:center" class="muted">${ic(i)}<span style="font-size:.78rem;font-weight:700">${n}</span></div><div class="val" style="margin-top:8px">${v}</div><div class="sub">${sub}</div></div>`).join('') +
       `<div class="card sen"><div style="display:flex;gap:8px;align-items:center" class="muted">${ic('light')}<span style="font-size:.78rem;font-weight:700">LEDs (D2 · D3 · D4)</span></div>
         <div class="leds" style="margin-top:12px"><span class="led ${led===0?'on':''}" style="background:#E5484D;color:#E5484D"></span><span class="led ${led===1?'on':''}" style="background:#F2B705;color:#F2B705"></span><span class="led ${led===2?'on':''}" style="background:#30A46C;color:#30A46C"></span></div>
         <div class="sub" style="margin-top:8px">${esc(E.textos.leds[led]||'-')}</div></div>`;
   }
-  const S = E.serie;
-  $('#charts').innerHTML =
-    `<div class="card"><b>Umidade do solo (%)</b>${grafico(S,'solo',{cor:'#2F8A57',min:0,max:100,linhas:[[c.lo,'#D64545'],[c.hi,'#30A46C']],bomba:true})}</div>` +
-    `<div class="card"><b>Temperatura (°C)</b>${grafico(S,'temp',{cor:'#E0892B'})}</div>` +
-    `<div class="card"><b>Luz (LDR)</b>${grafico(S,'ldr',{cor:'#C9A21B',min:0,max:1023,linhas:[[650,'#C9A21B'],[400,'#888']]})}</div>`;
-  const up = D.up||0;
-  $('#diag').innerHTML = [
-    ['Status', E.online?'online':'offline'], ['Último contato', D.visto?`${rel(D.visto)} (${hora(D.visto)})`:'-'],
-    ['Ligado há', D.up!==undefined?dur(up):'-'], ['Intervalo de envio', c.intervalo+' s'],
-    ['Leituras no buffer do Arduino', D.buffer??'-'], ['Leituras recebidas do buffer (último envio)', D.hist_recebido??'-'],
-    ['Leituras compactadas (descartadas)', D.descartadas??'-'], ['Ciclos atrasados', D.atrasos??'-'],
-    ['Última falha de comunicação', D.falha?`${esc(E.textos.falhas[D.falha]||D.falha)} (${D.nfalhas}x)`:'nenhuma'],
-    ['RAM livre no Uno', D.ram?D.ram+' bytes de 2048':'-'],
-    ['Config aplicada no Arduino', `v${D.cv??'-'} ${E.config_aplicada?'✓':'(servidor tem v'+c.versao+')'}`],
-    ['Último comando confirmado', D.ack?'#'+D.ack:'-'], ['Regas desde que ligou', D.regas??'-'], ['Bomba ligada desde que ligou', D.bomba_s!==undefined?dur(D.bomba_s):'-'],
-  ].map(([k,v])=>`<span>${k}</span><span>${v}</span>`).join('');
   const H = E.hoje;
   $('#hoje').innerHTML = [
-    ['Leituras recebidas', H.leituras], ['Envios do Arduino', H.comunicacoes], ['Regas', H.regas], ['Tempo de bomba', dur(H.bomba_s)],
+    ['Leituras recebidas', H.leituras], ['Envios do Arduino', H.comunicacoes], ['Regas (todas)', H.regas], ['Regas automáticas', H.regas_auto], ['Tempo de bomba', dur(H.bomba_s)],
     ['Temperatura mín / máx', H.tmin!==null?`${num(H.tmin,1)}° / ${num(H.tmax,1)}°`:'-'], ['Temperatura média', H.tavg!==null?num(H.tavg,1)+'°':'-'],
     ['Solo mín / máx', H.smin!==null?`${H.smin}% / ${H.smax}%`:'-'],
   ].map(([k,v])=>`<span>${k}</span><span>${v}</span>`).join('');
 }
-function renderRegas(){
-  const c = E.config;
-  if (!$('#durChips').dataset.ok){
-    $('#durChips').dataset.ok = 1;
-    $('#durChips').innerHTML = [10,20,30,60,120].map(v=>`<button type="button" class="chip" data-d="${v}">${v} s</button>`).join('');
-    $('#durChips').onclick = e=>{ const b=e.target.closest('[data-d]'); if(!b) return; durEscolhida=+b.dataset.d; $('#durInput').value=durEscolhida; marcarDur(); };
-    $('#durInput').oninput = ()=>{ durEscolhida = parseInt($('#durInput').value)||null; marcarDur(); };
-  }
-  if (!durEscolhida){ durEscolhida = c.duracao; $('#durInput').value = c.duracao; }
-  marcarDur();
-  const P = E.protecao;
-  $('#protBox').innerHTML = c.modo===2 ? `<div class="banner err">${ic('alert')}<div>Modo <b>desligado</b>: pedidos de rega ficam bloqueados.</div></div>`
-    : P.ativa ? `<div class="banner warn">${ic('shield')}<div><b>Proteção contra encharcar ativa.</b> ${P.motivos.map(esc).join(' · ')}${P.ate?` · libera ${rel(P.ate).replace('há','em')} (${hora(P.ate)})`:''}. Para regar agora será pedida a senha.</div></div>`
-    : `<div class="banner ok">${ic('check')}<div>Rega liberada sem senha.</div></div>`;
-  $('#filaFull').innerHTML = filaHtml(E.fila, true);
-  $('#regasRec').innerHTML = E.regas.length ? E.regas.map(r=>`<div class="item"><div class="sq" style="background:${r.motivo===2?'var(--gold)':'var(--g600)'};color:${r.motivo===2?'#3D2C00':'#fff'}">${ic(r.motivo===2?'drop':'pump')}</div>
-     <div class="grow"><div class="t">${r.fim?dur(r.fim-r.inicio):'em andamento'} · ${esc(E.textos.motivos[r.motivo]||'')}</div><div class="s">${dataHora(r.inicio)}${r.quem?' · '+esc(r.quem):''}</div></div>${r.fim?'':'<span class="badge gold">agora</span>'}</div>`).join('') : '<div class="empty">Nenhuma rega registrada</div>';
-  $('#people').innerHTML = E.presenca.length ? E.presenca.map(p=>`<span class="person"><i>${esc(ini(p.nome))}</i>${esc(p.nome)}${p.nome===NOME?' (você)':''}</span>`).join('') : '<span class="muted">ninguém</span>';
+
+function medidor(partes, total, lbl){
+  return `<div class="meter"><div class="mbar">${partes.map(([v,c])=>`<i style="width:${Math.max(0,Math.min(100,v*100/total))}%;background:${c}"></i>`).join('')}</div><div class="mlbl">${lbl}</div></div>`;
 }
-function marcarDur(){ document.querySelectorAll('#durChips .chip').forEach(b=>b.classList.toggle('on', +b.dataset.d===durEscolhida)); }
+function renderArduino(){
+  const D = E.dispositivo||{}, H = E.hw, lim = E.hw_limites;
+  const cls = H.nivel===2?'sb':H.nivel===1?'at':'ok';
+  $('#hwVeredito').innerHTML = `<div class="verdict ${cls}"><span class="vi">${ic(H.nivel===2?'alert':H.nivel===1?'clock':'check')}</span>
+    <div><div class="cap">Está sobrecarregado?</div><h3 style="font-size:1.25rem;margin-top:2px">${H.nivel<0?'Sem dados de hardware':H.nivel===0?'Não — funcionando com folga':H.nivel===1?'Ainda não, mas em atenção':'SIM — sobrecarregado'}</h3>
+    <div class="sub">${H.motivos.map(esc).join(' · ')}</div></div></div>`;
+  if (H.nivel<0){ ['#hwCpu','#hwRam','#hwBuf','#hwCom'].forEach(s=>$(s).innerHTML=''); return; }
+  const lav = D.lps ? 1e6/D.lps : null;
+  $('#hwCpu').innerHTML = `<div style="display:flex;gap:8px;align-items:center">${ic('bolt')}<h3>Processador (ATmega328P)</h3></div>
+    <div class="stat">
+      <div><b>${D.mhz||16} MHz</b><span>clock (fixo, cristal)</span></div>
+      <div><b>${D.ocu}% <span class="muted" style="font-size:.8rem">/ pico ${D.ocm}%</span></b><span>carga média / máxima</span></div>
+      <div><b>${num(D.lps)}</b><span>voltas do loop por segundo (média)</span></div>
+      <div><b>${num(D.lpn)}</b><span>voltas/s no segundo mais ocupado</span></div>
+      <div><b>${lav?num(lav,0)+' µs':'-'}</b><span>tempo médio de cada volta</span></div>
+      <div><b>${num(D.lmx/1000,1)} ms</b><span>volta mais lenta (limite 50 ms)</span></div>
+    </div>
+    <div style="margin-top:12px" class="cap">Carga média</div>${medidor([[D.ocu, D.ocu>80?'var(--red)':D.ocu>50?'var(--gold)':'var(--g500)']],100,`<span>0%</span><span>atenção 50%</span><span>sobrecarga 80%</span><span>100%</span>`)}
+    <div style="margin-top:10px" class="cap">Volta mais lenta</div>${medidor([[Math.min(D.lmx/1000,60), D.lmx>50000?'var(--red)':D.lmx>25000?'var(--gold)':'var(--g500)']],60,`<span>0 ms</span><span>25 ms</span><span>50 ms</span><span>60+</span>`)}`;
+  const usada = lim.ram_total - (D.ram||0), pilha = Math.max(0, usada - (D.rst||0));
+  $('#hwRam').innerHTML = `<div style="display:flex;gap:8px;align-items:center">${ic('mem')}<h3>Memória</h3></div>
+    <div class="stat">
+      <div><b>${num(usada)} B</b><span>RAM usada agora (de ${lim.ram_total})</span></div>
+      <div><b>${num(D.ram)} B</b><span>RAM livre agora</span></div>
+      <div><b>${num(D.rmn)} B</b><span>RAM livre mínima (pior momento)</span></div>
+      <div><b>${num(D.rst)} B</b><span>variáveis globais (fixo)</span></div>
+    </div>
+    <div style="margin-top:12px" class="cap">RAM (${lim.ram_total} bytes)</div>
+    ${medidor([[D.rst||0,'var(--g700)'],[pilha,'var(--gold)'],[D.ram||0,'var(--mint)']], lim.ram_total, `<span>■ globais ${D.rst} B</span><span>■ pilha ${pilha} B</span><span>■ livre ${D.ram} B</span>`)}
+    <div style="margin-top:10px" class="cap">Flash (programa)</div>
+    ${medidor([[D.fl||0,'var(--g600)']], lim.flash_total, `<span>${num(D.fl)} B usados</span><span>${num(lim.flash_total)} B total (${Math.round((D.fl||0)*100/lim.flash_total)}%)</span>`)}
+    <div class="kv" style="margin-top:12px"><span>Alimentação (Vcc)</span><span>${D.vcc?num(D.vcc/1000,2)+' V':'-'}</span></div>`;
+  $('#hwBuf').innerHTML = `<div style="display:flex;gap:8px;align-items:center">${ic('box')}<h3>Buffer de leituras (offline)</h3></div>
+    <p class="sub">Se o servidor não responde, o Arduino guarda as leituras. Quando volta, envia até 20 por vez e só apaga depois que o servidor confirma.</p>
+    ${medidor([[D.buffer||0, (D.buffer||0)>=0.75*(D.qc||40)?'var(--red)':'var(--g500)']], D.qc||40, `<span>${D.buffer||0} guardada(s)</span><span>capacidade ${D.qc||40} (${(D.qc||40)*10} bytes)</span>`)}
+    <div class="kv" style="margin-top:12px">
+      <span>Recebidas no último envio</span><span>${D.hist_recebido??0}</span>
+      <span>Entregues após quedas (desde que ligou)</span><span>${D.env??0}</span>
+      <span>Compactadas (buffer encheu)</span><span>${D.descartadas??0}</span></div>`;
+  $('#hwCom').innerHTML = `<div style="display:flex;gap:8px;align-items:center">${ic('wifi')}<h3>Comunicação</h3></div>
+    <div class="kv" style="margin-top:10px">
+      <span>Status</span><span>${E.online?'online':'offline'}</span>
+      <span>Último contato</span><span>${D.visto?`${rel(D.visto)} (${hora(D.visto)})`:'-'}</span>
+      <span>Ligado há</span><span>${D.up!==undefined?dur(D.up):'-'}</span>
+      <span>Envio a cada</span><span>${E.config.intervalo} s</span>
+      <span>Ciclos atrasados</span><span>${D.atrasos??0}</span>
+      <span>Última falha</span><span>${D.falha?`${esc(E.textos.falhas[D.falha]||D.falha)} (${D.nfalhas}x)`:'nenhuma'}</span>
+      <span>Config aplicada</span><span>v${D.cv??'-'} ${E.config_aplicada?'✓':'(servidor v'+E.config.versao+')'}</span>
+      <span>Último comando confirmado</span><span>${D.ack?'#'+D.ack:'-'}</span>
+      <span>Regas desde que ligou</span><span>${D.regas??'-'} · ${D.bomba_s!==undefined?dur(D.bomba_s):'-'}</span></div>`;
+}
+
 function renderAjustes(){
-  const c = E.config, D = E.dispositivo||{}, L = E.lock;
-  $('#lockBox').innerHTML = L && !L.expirado ? `<div class="banner warn" style="margin-bottom:12px">${ic('alert')}<div><b>${esc(L.quem)} já está enviando uma configuração</b> (v${L.versao}) ao regador. Aguarde o Arduino confirmar (${rel(L.desde)}).</div></div>`
-    : L && L.expirado ? `<div class="banner err" style="margin-bottom:12px">${ic('alert')}<div>O Arduino não confirmou a configuração v${L.versao} de ${esc(L.quem)} (offline?). Ela será aplicada quando ele voltar.</div></div>` : '';
+  const c = E.config, D = E.dispositivo||{};
+  const sb = $('#swBloq'); sb.classList.toggle('on', c.modo===2); sb.setAttribute('aria-checked', c.modo===2);
   $('#cfgAtual').innerHTML = [
-    ['Modo', E.textos.modos[c.modo]], ['Liga abaixo de', c.lo+'%'], ['Desliga a partir de', c.hi+'%'],
-    ['Velocidade', c.vel<0?'potenciômetro':c.vel+'/255'], ['Envio', 'a cada '+c.intervalo+' s'], ['Rega manual padrão', c.duracao+' s'],
-    ['Proteção', c.protecao+' min'], ['Versão', `v${c.versao} ${E.config_aplicada?'(aplicada ✓)':'(aguardando Arduino, ele está com v'+(D.cv??'-')+')'}`],
+    ['Modo', E.textos.modos[c.modo]], ['Automático: liga abaixo de', c.lo+'%'], ['Automático: desliga a partir de', c.hi+'%'],
+    ['Automático: potência', velTxt(c.vel)], ['Manual: duração padrão', c.duracao+' s'], ['Manual: potência', velTxt(c.velm)],
+    ['Proteção', c.protecao+' min'], ['Envio', 'a cada '+c.intervalo+' s'],
+    ['Versão', `v${c.versao} ${E.config_aplicada?'(aplicada ✓)':'(Arduino com v'+(D.cv??'-')+')'}`],
   ].map(([k,v])=>`<span>${k}</span><span>${esc(v)}</span>`).join('');
-  $('#senhaInfo').innerHTML = `<b>Senha</b><p class="muted" style="font-size:.84rem;margin:6px 0 0">Pedida só para ações de risco: liberar a proteção contra encharcar, mudar configuração, restaurar padrões, limpar a fila ou cancelar pedido de outra pessoa.${E.senha_padrao?' <b style="color:var(--red)">A senha ainda é a padrão — troque SENHA_PAINEL no flask_app.py.</b>':''}</p>`;
-  if (aba!=='ajustes' || !cfgSujo) preencherCfg();
+  $('#senhaInfo').innerHTML = `<h3>Senha</h3><p class="sub">Pedida para: mudar qualquer configuração, ligar/desligar o automático, liberar a proteção contra encharcar, restaurar padrões, limpar a fila ou cancelar pedido de outra pessoa.${E.senha_padrao?' <b style="color:var(--red)">A senha ainda é a padrão — troque SENHA no flask_app.py.</b>':''}</p>`;
+  if (!$('#nomeInput').matches(':focus')) $('#nomeInput').value = NOME;
+  preencherCom();
+  const B = E.banco;
+  $('#bancoInfo').textContent = `Banco: ${bytes(B.tamanho)} · ${num(B.leituras)} leituras${B.desde?' desde '+dataHora(B.desde):''} · apagamos automaticamente o que tem mais de ${B.retencao_dias} dias.`;
 }
+
 function render(){
   renderUsuario(); renderBanners();
   if (!E) return;
   const st = $('#stPill'); st.className = 'pill '+(E.online?'on':'off'); st.innerHTML = `<span class="dot"></span>${E.online?'Online':'Offline'}`;
-  renderInicio(); renderSensores(); renderRegas(); renderAjustes();
+  renderInicio(); renderAuto(); renderRegas(); renderSensores(); renderArduino(); renderAjustes();
 }
 
-/* ---------------- historico ---------------- */
-const HT = [['eventos','Eventos'],['comunicacao','Envios e recebimentos'],['pedidos','Pedidos'],['regas','Regas'],['leituras','Leituras']];
+/* ================= historico ================= */
+const HT = [['eventos','Eventos'],['comunicacao','Envios e recebimentos'],['regas','Regas'],['pedidos','Pedidos'],['leituras','Leituras']];
 $('#histTipos').innerHTML = HT.map(([k,t])=>`<button class="chip" data-ht="${k}">${t}</button>`).join('');
 $('#histTipos').onclick = e=>{ const b=e.target.closest('[data-ht]'); if(!b) return; histTipo=b.dataset.ht; histDir=''; carregarHistorico(); };
 $('#histDirs').onclick = e=>{ const b=e.target.closest('[data-hd]'); if(!b) return; histDir=b.dataset.hd; carregarHistorico(); };
 async function carregarHistorico(){
-  document.querySelectorAll('#histTipos .chip').forEach(b=>b.classList.toggle('on', b.dataset.ht===histTipo));
+  $$('#histTipos .chip').forEach(b=>b.classList.toggle('on', b.dataset.ht===histTipo));
   $('#histDirs').innerHTML = histTipo==='comunicacao' ? [['','Todos'],['recebido','Recebidos do Arduino'],['enviado','Enviados ao Arduino']].map(([k,t])=>`<button class="chip ${histDir===k?'on':''}" data-hd="${k}">${t}</button>`).join('') : '';
   $('#csv').href = `/api/exportar.csv?tipo=${histTipo}`;
   let rows = [];
   try { rows = await (await fetch(`/api/historico?tipo=${histTipo}&n=150${histDir?'&direcao='+histDir:''}`)).json(); } catch(e){ $('#histLista').innerHTML = '<div class="empty">Sem conexão</div>'; return; }
   if (!rows.length){ $('#histLista').innerHTML = '<div class="empty">Nada registrado ainda</div>'; return; }
+  if (histTipo==='regas' && E){ $('#histLista').innerHTML = rows.map(r=>regaHtml(r)).join(''); return; }
   const linha = (t, m, tag='') => `<div class="hrow"><span class="w">${dataHora(t)}</span><span class="m">${tag}${m}</span></div>`;
   $('#histLista').innerHTML = rows.map(r=>{
     if (histTipo==='eventos') return linha(r.em, esc(r.msg), `<span class="tag ${r.tipo==='alerta'||r.tipo==='offline'?'rx':'tx'}">${esc(r.tipo)}</span> `);
     if (histTipo==='comunicacao') return linha(r.em, `<code>${esc(r.resumo)}</code>`, r.direcao==='recebido'?'<span class="tag rx">recebido ←</span> ':'<span class="tag tx">enviado →</span> ');
-    if (histTipo==='pedidos') return linha(r.criado, `<b>${esc(r.tipo)}</b>${r.tipo==='regar'?' '+r.duracao+' s':''} por ${esc(r.quem)} · <b>${esc(r.status)}</b>${r.forcado?' · liberado com senha':''}${r.executado?' · executado '+hora(r.executado):''}`);
-    if (histTipo==='regas') return linha(r.inicio, `${r.fim?dur(r.fim-r.inicio):'em andamento'} · ${esc(E?.textos.motivos[r.motivo]||r.motivo)}${r.quem?' · '+esc(r.quem):''}${r.origem==='buffer'?' · offline':''}`);
-    return linha(r.em, `T ${num(r.temp,1)}° · solo ${r.solo}%${r.solo_raw!==null?' (raw '+r.solo_raw+')':''} · LDR ${r.ldr}${r.pot!==null?' · pot '+r.pot:''} · bomba ${r.bomba?'ON':'off'}${r.erros?' · erro '+r.erros:''}`, r.origem==='buffer'?'<span class="tag rx">buffer</span> ':'');
+    if (histTipo==='pedidos') return linha(r.criado, `<b>${esc(r.tipo)}</b>${r.tipo==='regar'?' '+r.duracao+' s':''}${r.vel!==null&&r.vel!==undefined?' · '+esc(velTxt(r.vel)):''} por ${esc(r.quem)} · <b>${esc(r.status)}</b>${r.forcado?' · liberado com senha':''}${r.executado?' · executado '+hora(r.executado):''}`);
+    return linha(r.em, `T ${num(r.temp,1)}° · solo ${r.solo}%${r.solo_raw!==null?' (raw '+r.solo_raw+')':''} · LDR ${r.ldr}${r.pot!==null?' · pot '+r.pot:''} · bomba ${r.bomba?'ON '+(r.vel??''):'off'}${r.carga!==null?' · CPU '+r.carga+'%':''}${r.ram!==null?' · RAM '+r.ram+' B':''}${r.erros?' · erro '+r.erros:''}`, r.origem==='buffer'?'<span class="tag rx">buffer</span> ':'');
   }).join('');
 }
 
-/* ---------------- ciclo de atualizacao ---------------- */
+/* ================= ciclo de atualizacao ================= */
 const AVISAR = new Set(['pedido','config','confirmacao','alerta','offline','online','rega']);
-let buscando = false, falhasSeguidas = 0;
+let buscando = false, falhas = 0, ultSerie = 0;
 async function atualizar(){
   if (buscando) return; buscando = true;
   try {
@@ -907,7 +1391,7 @@ async function atualizar(){
       d.eventos.forEach(ev=>{
         feed.push(ev);
         if (AVISAR.has(ev.tipo)){
-          const proprio = ev.quem && ev.quem===NOME && ev.tipo==='pedido';
+          const proprio = ev.quem && ev.quem===NOME && (ev.tipo==='pedido' || ev.tipo==='config');
           if (!proprio) toast(esc(ev.msg), ev.tipo==='alerta'||ev.tipo==='offline'?'err':ev.tipo==='pedido'?'warn':'', EV_IC[ev.tipo]||'check');
           if (ev.tipo==='pedido' && navigator.vibrate) { try{ navigator.vibrate(60); }catch(e){} }
         }
@@ -915,11 +1399,16 @@ async function atualizar(){
       if (feed.length>200) feed = feed.slice(-200);
     }
     ultimoEv = Math.max(ultimoEv, d.ultimo_evento||0);
-    E = d; falhasSeguidas = 0;
+    E = d; falhas = 0;
     render();
-    if (aba==='historico' && Date.now() - (window._ultHist||0) > 6000){ window._ultHist = Date.now(); carregarHistorico(); }
+    if (Date.now() - ultSerie > 10000){
+      ultSerie = Date.now();
+      if (aba==='sensores' || aba==='auto') carregarSerie();
+      if (aba==='arduino') carregarSerieHw();
+      if (aba==='historico') carregarHistorico();
+    }
   } catch(e){
-    if (++falhasSeguidas >= 2){ E = null; render(); }
+    if (++falhas >= 2){ E = null; render(); }
   } finally { buscando = false; }
 }
 

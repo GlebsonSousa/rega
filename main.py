@@ -1,19 +1,18 @@
 # =====================================================================
-#  Regador Inteligente - servidor (PythonAnywhere, HTTP porta 80)
+#  Regador Inteligente v2 - servidor (PythonAnywhere, HTTP porta 80)
 # =====================================================================
 #  O Arduino (ESP-01 com firmware AT) chama GET /d a cada ciclo.
-#  A resposta e UMA linha de texto com a configuracao e, se houver,
-#  um comando da fila:
-#     CFG;i=10;lo=34;hi=65;m=0;v=-1;cv=3;c=1;cid=17;cd=20;FIM
+#  A resposta e UMA linha de texto com a configuracao, o comando da fila
+#  (se houver) e quantas leituras antigas foram recebidas (hq):
+#     CFG;i=10;lo=34;hi=65;m=0;v=-1;vm=-1;cv=3;c=1;cid=17;cd=5;hq=12;FIM
 #
 #  Rede de usuarios (painel web):
 #   - todos veem tudo e todos podem pedir rega / parar
-#   - pedidos de rega entram numa FILA (buffer) e sao entregues um por vez
+#   - pedidos de rega entram numa FILA e sao entregues um por vez
 #   - toda acao vira um EVENTO que aparece para todos os conectados
-#   - mudar configuracao trava ate o Arduino confirmar (outro usuario
-#     recebe o aviso "fulano ja esta enviando dados ao regador")
-#   - protecao contra encharcar: rega recente, solo umido ou rega ja na
-#     fila -> so prossegue com senha
+#   - mudar configuracao trava ate o Arduino confirmar
+#   - protecao contra encharcar: so prossegue com senha
+#   - historico guardado por 7 dias
 # =====================================================================
 
 import os, json, time, sqlite3, csv, io
@@ -28,16 +27,21 @@ except Exception:  # sem base de fusos: usa -3h fixo
     TZ = timezone(timedelta(hours=-3))
 
 BASE = os.path.dirname(os.path.abspath(__file__))
-DB = os.path.join(BASE, "regador.db")  # banco novo (o irrigacao.db antigo pode ser apagado)
+DB = os.path.join(BASE, "regador.db")
 
 TOKEN = os.environ.get("DEVICE_TOKEN", "irriga123")  # igual ao TOKEN do Arduino
 SENHA = os.environ.get("SENHA_PAINEL", "fatec2026")  # senha das acoes de risco
 
-# Padroes = valores do seu codigo original
-CFG_PADRAO = {"intervalo": 10, "lo": 34, "hi": 65, "modo": 0, "vel": -1, "duracao": 20, "protecao": 30}
+# Padroes = valores do seu codigo original (rega manual: 5 s)
+CFG_PADRAO = {"intervalo": 10, "lo": 34, "hi": 65, "modo": 0, "vel": -1, "velm": -1,
+              "duracao": 5, "protecao": 30}
 LIMITES = {"intervalo": (5, 600), "lo": (0, 99), "hi": (1, 100), "modo": (0, 2),
-           "vel": (-1, 255), "duracao": (1, 600), "protecao": (0, 1440)}
-CAMPOS_ARDUINO = ("intervalo", "lo", "hi", "modo", "vel")  # os que o Arduino precisa confirmar
+           "vel": (-1, 255), "velm": (-1, 255), "duracao": (2, 600), "protecao": (0, 1440)}
+CAMPOS_ARDUINO = ("intervalo", "lo", "hi", "modo", "vel", "velm")  # o Arduino precisa confirmar
+NOMES_CAMPOS = {"intervalo": "envio (s)", "lo": "liga abaixo de (%)", "hi": "desliga a partir de (%)",
+                "modo": "modo", "vel": "potência automática", "velm": "potência manual",
+                "duracao": "rega manual (s)", "protecao": "proteção (min)"}
+DURACAO_RECOMENDADA = 10  # acima disso o painel pede confirmacao
 
 MODOS = ["automático", "manual", "desligado"]
 MOTIVOS = {0: "desligada", 1: "automática (histerese)", 2: "manual (pedido)", -1: "registrada offline"}
@@ -52,18 +56,16 @@ FALHAS = {
 ERROS_SENSOR = {1: "temperatura fora da faixa (TMP36)", 2: "sensor de solo instável/desconectado",
                 4: "LDR com leitura instável"}
 
+RETENCAO_S = 7 * 24 * 3600  # historico: ultimos 7 dias
 LOCK_CFG_S = 120  # trava de configuracao expira se o Arduino nao confirmar
-PRESENCA_S = 15  # considerado "conectado" se consultou nos ultimos 15 s
-MAX_LEITURAS = 20000
-MAX_COMUNICACAO = 600
-MAX_EVENTOS = 1500
-MAX_PEDIDOS = 1500
+PRESENCA_S = 15  # "conectado" se consultou nos ultimos 15 s
+RAM_TOTAL, FLASH_TOTAL = 2048, 32256  # ATmega328P (flash sem o bootloader)
 
 app = Flask(__name__)
 
 
 # ---------------------------------------------------------------------
-#  Banco
+#  Banco (cria e atualiza bancos antigos sem perder dados)
 # ---------------------------------------------------------------------
 def db():
     con = sqlite3.connect(DB, timeout=10)
@@ -71,23 +73,33 @@ def db():
     return con
 
 
+ESQUEMA = {
+    "leituras": "id INTEGER PRIMARY KEY, em REAL, origem TEXT, temp REAL, ldr INT, solo_raw INT, solo INT, "
+                "pot INT, vel INT, bomba INT, motivo INT, led INT, modo INT, erros INT, "
+                "ram INT, carga INT, lmx INT, vcc INT",
+    "eventos": "id INTEGER PRIMARY KEY, em REAL, tipo TEXT, quem TEXT, msg TEXT",
+    "comunicacao": "id INTEGER PRIMARY KEY, em REAL, direcao TEXT, resumo TEXT",
+    "pedidos": "id INTEGER PRIMARY KEY, criado REAL, tipo TEXT, duracao INT, quem TEXT, prioridade INT, "
+               "status TEXT, forcado INT DEFAULT 0, obs TEXT, entregue REAL, executado REAL, vel INT",
+    "regas": "id INTEGER PRIMARY KEY, inicio REAL, fim REAL, motivo INT, quem TEXT, origem TEXT, "
+             "vel INT, solo_ini INT, solo_fim INT, temp_ini REAL, duracao_pedida INT, lo INT, hi INT",
+    "kv": "k TEXT PRIMARY KEY, v TEXT",
+    "presenca": "nome TEXT PRIMARY KEY, visto REAL",
+}
+
+
 def init_db():
     with db() as con:
-        con.executescript("""
-        CREATE TABLE IF NOT EXISTS leituras(id INTEGER PRIMARY KEY, em REAL, origem TEXT, temp REAL,
-            ldr INT, solo_raw INT, solo INT, pot INT, vel INT, bomba INT, motivo INT, led INT,
-            modo INT, erros INT);
-        CREATE INDEX IF NOT EXISTS ix_leituras_em ON leituras(em);
-        CREATE TABLE IF NOT EXISTS eventos(id INTEGER PRIMARY KEY, em REAL, tipo TEXT, quem TEXT, msg TEXT);
-        CREATE TABLE IF NOT EXISTS comunicacao(id INTEGER PRIMARY KEY, em REAL, direcao TEXT, resumo TEXT);
-        CREATE TABLE IF NOT EXISTS pedidos(id INTEGER PRIMARY KEY, criado REAL, tipo TEXT, duracao INT,
-            quem TEXT, prioridade INT, status TEXT, forcado INT DEFAULT 0, obs TEXT,
-            entregue REAL, executado REAL);
-        CREATE TABLE IF NOT EXISTS regas(id INTEGER PRIMARY KEY, inicio REAL, fim REAL, motivo INT,
-            quem TEXT, origem TEXT);
-        CREATE TABLE IF NOT EXISTS kv(k TEXT PRIMARY KEY, v TEXT);
-        CREATE TABLE IF NOT EXISTS presenca(nome TEXT PRIMARY KEY, visto REAL);
-        """)
+        for tabela, colunas in ESQUEMA.items():
+            con.execute(f"CREATE TABLE IF NOT EXISTS {tabela}({colunas})")
+            existentes = {r["name"] for r in con.execute(f"PRAGMA table_info({tabela})")}
+            for col in colunas.split(","):
+                partes = col.strip().split()
+                if partes[0] not in existentes and "PRIMARY" not in col:
+                    con.execute(f"ALTER TABLE {tabela} ADD COLUMN {' '.join(partes)}")
+        for tabela, campo in (("leituras", "em"), ("eventos", "em"), ("comunicacao", "em"),
+                              ("pedidos", "criado"), ("regas", "inicio")):
+            con.execute(f"CREATE INDEX IF NOT EXISTS ix_{tabela}_{campo} ON {tabela}({campo})")
 
 
 def kv_get(con, k, padrao=None):
@@ -111,16 +123,21 @@ def comunicacao(con, direcao, resumo):
     con.execute("INSERT INTO comunicacao(em,direcao,resumo) VALUES(?,?,?)", (time.time(), direcao, resumo))
 
 
-def aparar(con):
-    """Mantem as tabelas num tamanho saudavel (corta pelo id, barato)."""
-    for tabela, maximo in (("leituras", MAX_LEITURAS), ("comunicacao", MAX_COMUNICACAO),
-                           ("eventos", MAX_EVENTOS), ("pedidos", MAX_PEDIDOS)):
-        con.execute(f"DELETE FROM {tabela} WHERE id <= (SELECT MAX(id) FROM {tabela}) - ?", (maximo,))
+def limpar_antigos(con, agora):
+    """Apaga o que tem mais de 7 dias (roda no maximo a cada 10 min)."""
+    if agora - kv_get(con, "ultima_limpeza", 0) < 600:
+        return
+    corte = agora - RETENCAO_S
+    for tabela, campo in (("leituras", "em"), ("eventos", "em"), ("comunicacao", "em"),
+                          ("pedidos", "criado"), ("regas", "inicio")):
+        con.execute(f"DELETE FROM {tabela} WHERE {campo} < ?", (corte,))
+    con.execute("DELETE FROM presenca WHERE visto < ?", (agora - 86400,))
+    kv_set(con, "ultima_limpeza", agora)
 
 
 def get_cfg(con):
     cfg = dict(CFG_PADRAO)
-    cfg.update(kv_get(con, "config", {}))
+    cfg.update({k: v for k, v in kv_get(con, "config", {}).items() if k in CFG_PADRAO})
     cfg["versao"] = kv_get(con, "cfg_versao", 1)
     return cfg
 
@@ -132,9 +149,9 @@ def validar_cfg(base, novo):
             try:
                 val = int(float(novo[chave]))
             except (TypeError, ValueError):
-                return None, f"'{chave}' inválido"
+                return None, f"'{NOMES_CAMPOS[chave]}' inválido"
             if not mn <= val <= mx:
-                return None, f"'{chave}' deve ficar entre {mn} e {mx}"
+                return None, f"'{NOMES_CAMPOS[chave]}' deve ficar entre {mn} e {mx}"
             cfg[chave] = val
     if cfg["lo"] >= cfg["hi"]:
         return None, "O limite que LIGA precisa ser menor que o limite que DESLIGA"
@@ -159,11 +176,14 @@ def hoje_inicio():
     return agora.replace(hour=0, minute=0, second=0, microsecond=0).timestamp()
 
 
+def txt_vel(v):
+    return "potenciômetro" if v is None or v < 0 else f"{v}/255 ({round(v * 100 / 255)}%)"
+
+
 # ---------------------------------------------------------------------
 #  Regras de negocio
 # ---------------------------------------------------------------------
 def fila_ativa(con):
-    """Pedidos ainda nao executados, na ordem em que serao entregues."""
     return con.execute("""SELECT * FROM pedidos WHERE status IN ('entregue','fila')
                           ORDER BY CASE status WHEN 'entregue' THEN 0 ELSE 1 END, prioridade DESC, id""").fetchall()
 
@@ -173,7 +193,6 @@ def ultima_leitura(con):
 
 
 def protecao(con, cfg, agora):
-    """Motivos que exigem senha para uma nova rega (protecao contra encharcar)."""
     motivos, ate = [], None
     ult = con.execute("SELECT * FROM regas ORDER BY id DESC LIMIT 1").fetchone()
     janela = cfg["protecao"] * 60
@@ -185,8 +204,8 @@ def protecao(con, cfg, agora):
             motivos.append(f"Já houve uma rega há {mins} min (proteção de {cfg['protecao']} min)")
             ate = ult["fim"] + janela
     leit = ultima_leitura(con)
-    if leit and leit["solo"] >= cfg["hi"]:
-        motivos.append(f"O solo já está úmido ({leit['solo']}% >= {cfg['hi']}%)")
+    if leit and leit["solo"] is not None and leit["solo"] >= cfg["hi"]:
+        motivos.append(f"O solo já está úmido ({leit['solo']}% ≥ {cfg['hi']}%)")
     n = con.execute("SELECT COUNT(*) FROM pedidos WHERE tipo='regar' AND status IN ('fila','entregue')").fetchone()[0]
     if n:
         motivos.append(f"Já existe{'m' if n > 1 else ''} {n} rega{'s' if n > 1 else ''} na fila")
@@ -199,8 +218,15 @@ def descrever_pedido(p):
     return {"parar": "parar a bomba", "retomar": "retomar o automático"}.get(p["tipo"], p["tipo"])
 
 
+def lock_cfg(con):
+    lock = kv_get(con, "lock_cfg")
+    if not lock:
+        return None
+    lock["expirado"] = time.time() - lock["desde"] > LOCK_CFG_S
+    return lock
+
+
 def quem_ocupa(con):
-    """Quem esta 'enviando dados ao regador' agora (para o aviso)."""
     lock = lock_cfg(con)
     if lock and not lock["expirado"]:
         return {"quem": lock["quem"], "o_que": f"uma configuração (v{lock['versao']})"}
@@ -210,35 +236,169 @@ def quem_ocupa(con):
     return None
 
 
-def lock_cfg(con):
-    lock = kv_get(con, "lock_cfg")
-    if not lock:
-        return None
-    lock["expirado"] = time.time() - lock["desde"] > LOCK_CFG_S
-    return lock
-
-
-def registrar_bomba(con, em, ligada, motivo, origem):
-    """Cria/fecha registros de rega a partir das transicoes da bomba."""
+def registrar_bomba(con, em, leit, motivo, origem, cfg):
+    """Cria/fecha registros de rega a partir das transicoes da bomba, com a configuracao usada."""
     antes = kv_get(con, "bomba_estado", 0)
+    ligada = bool(leit.get("bomba"))
     if ligada and not antes:
-        quem = None
+        quem = dur_pedida = None
         if motivo == 2:
-            p = con.execute("SELECT quem FROM pedidos WHERE tipo='regar' AND status IN ('entregue','executado') "
-                            "ORDER BY id DESC LIMIT 1").fetchone()
-            quem = p["quem"] if p else None
-        con.execute("INSERT INTO regas(inicio,motivo,quem,origem) VALUES(?,?,?,?)", (em, motivo, quem, origem))
-        txt = MOTIVOS.get(motivo, "?")
-        evento(con, "rega", f"Bomba LIGOU - rega {txt}" + (f" pedida por {quem}" if quem else "")
-               + (" (registrada enquanto estava offline)" if origem == "buffer" else ""), quem, em)
+            p = con.execute(
+                "SELECT quem, duracao FROM pedidos WHERE tipo='regar' AND status IN ('entregue','executado') "
+                "ORDER BY id DESC LIMIT 1").fetchone()
+            if p:
+                quem, dur_pedida = p["quem"], p["duracao"]
+        vel = leit.get("vel")
+        con.execute("""INSERT INTO regas(inicio,motivo,quem,origem,vel,solo_ini,temp_ini,duracao_pedida,lo,hi)
+                       VALUES(?,?,?,?,?,?,?,?,?,?)""",
+                    (em, motivo, quem, origem, vel, leit.get("solo"), leit.get("temp"), dur_pedida, cfg["lo"],
+                     cfg["hi"]))
+        partes = [f"Bomba LIGOU — rega {MOTIVOS.get(motivo, '?')}"]
+        if quem:
+            partes.append(f"pedida por {quem} ({dur_pedida} s)")
+        if motivo == 1:
+            partes.append(f"liga < {cfg['lo']}%, desliga ≥ {cfg['hi']}%")
+        if vel is not None:
+            partes.append(f"potência {vel}/255")
+        if leit.get("solo") is not None:
+            partes.append(f"solo {leit['solo']}%")
+        if origem == "buffer":
+            partes.append("registrada enquanto estava offline")
+        evento(con, "rega", " · ".join(partes), quem, em)
+    elif ligada and antes:
+        # guarda a potencia se ainda nao tinha (ex.: rega comecou numa leitura do buffer)
+        if leit.get("vel"):
+            con.execute("UPDATE regas SET vel=? WHERE fim IS NULL AND vel IS NULL", (leit["vel"],))
     elif not ligada and antes:
         r = con.execute("SELECT * FROM regas WHERE fim IS NULL ORDER BY id DESC LIMIT 1").fetchone()
-        dur = ""
+        txt = "Bomba DESLIGOU"
         if r:
-            con.execute("UPDATE regas SET fim=? WHERE id=?", (em, r["id"]))
-            dur = f" após {int(em - r['inicio'])} s"
-        evento(con, "rega", f"Bomba DESLIGOU{dur}", None, em)
+            con.execute("UPDATE regas SET fim=?, solo_fim=? WHERE id=?", (em, leit.get("solo"), r["id"]))
+            txt += f" após {int(em - r['inicio'])} s"
+            if leit.get("solo") is not None and r["solo_ini"] is not None:
+                txt += f" · solo {r['solo_ini']}% → {leit['solo']}%"
+        evento(con, "rega", txt, None, em)
     kv_set(con, "bomba_estado", 1 if ligada else 0)
+
+
+def pedido_manual_recente(con):
+    return con.execute("SELECT quem, duracao FROM pedidos WHERE tipo='regar' AND status IN ('entregue','executado') "
+                       "ORDER BY id DESC LIMIT 1").fetchone()
+
+
+def abrir_rega_ao_vivo(con, em, leit, cfg):
+    """Bomba ligada numa leitura ao vivo e nenhuma rega aberta: cria o registro (em andamento)."""
+    if con.execute("SELECT 1 FROM regas WHERE fim IS NULL").fetchone():
+        if leit.get("vel"):
+            con.execute("UPDATE regas SET vel=? WHERE fim IS NULL", (leit["vel"],))
+        return
+    motivo = leit.get("motivo")
+    quem = dur_pedida = None
+    if motivo == 2:
+        p = pedido_manual_recente(con)
+        if p:
+            quem, dur_pedida = p["quem"], p["duracao"]
+    con.execute("""INSERT INTO regas(inicio,motivo,quem,origem,vel,solo_ini,temp_ini,duracao_pedida,lo,hi)
+                   VALUES(?,?,?,?,?,?,?,?,?,?)""",
+                (em, motivo, quem, "ao vivo", leit.get("vel"), leit.get("solo"), leit.get("temp"), dur_pedida,
+                 cfg["lo"], cfg["hi"]))
+    partes = [f"Bomba LIGOU — rega {MOTIVOS.get(motivo, '?')}"]
+    if quem:
+        partes.append(f"pedida por {quem} ({dur_pedida} s)")
+    if motivo == 1:
+        partes.append(f"liga < {cfg['lo']}%, desliga ≥ {cfg['hi']}%")
+    partes.append(f"potência {leit.get('vel')}/255 · solo {leit.get('solo')}%")
+    evento(con, "rega", " · ".join(partes), quem, em)
+
+
+def processar_registro_regas(con, texto_regs, up, agora, leit, cfg):
+    """Registro enviado pelo Arduino v2 com as ultimas regas concluidas (inclusive as curtas
+    que comecam e terminam entre dois envios). Cada rega tem um id; repetidas sao ignoradas."""
+    ctrl = kv_get(con, "regas_ctrl", {"max": 0, "up": 0})
+    if up + 5 < ctrl.get("up", 0):  # Arduino reiniciou: ids recomecam do 1
+        ctrl["max"] = 0
+    novas = []
+    for item in (texto_regs or "").split("_"):
+        p = item.split(",")
+        if len(p) != 7:
+            continue
+        try:
+            rid, idade, dur, motivo, vel, si, sf = map(int, p)
+        except ValueError:
+            continue
+        if rid > ctrl["max"]:
+            novas.append((rid, idade, dur, motivo, vel, si, sf))
+    for rid, idade, dur, motivo, vel, si, sf in sorted(novas):
+        inicio = agora - idade
+        fim = inicio + dur
+        quem = dur_pedida = None
+        if motivo == 2:
+            pm = pedido_manual_recente(con)
+            if pm:
+                quem, dur_pedida = pm["quem"], pm["duracao"]
+        aberta = con.execute("SELECT * FROM regas WHERE fim IS NULL ORDER BY id DESC LIMIT 1").fetchone()
+        if aberta:
+            con.execute("""UPDATE regas SET inicio=?, fim=?, motivo=?, vel=?, solo_ini=?, solo_fim=?,
+                           quem=COALESCE(quem,?), duracao_pedida=COALESCE(duracao_pedida,?) WHERE id=?""",
+                        (inicio, fim, motivo, vel, si, sf, quem, dur_pedida, aberta["id"]))
+        else:
+            con.execute("""INSERT INTO regas(inicio,fim,motivo,quem,origem,vel,solo_ini,solo_fim,temp_ini,
+                           duracao_pedida,lo,hi) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)""",
+                        (inicio, fim, motivo, quem, "registro", vel, si, sf, leit.get("temp"), dur_pedida,
+                         cfg["lo"], cfg["hi"]))
+        tipo = MOTIVOS.get(motivo, "?")
+        txt = f"Rega {tipo} concluída: {dur} s · potência {vel}/255 ({round(vel * 100 / 255)}%) · solo {si}% → {sf}%"
+        if quem:
+            txt += f" · pedida por {quem}"
+        evento(con, "rega", txt, quem, fim)
+        ctrl["max"] = rid
+    ctrl["up"] = up
+    kv_set(con, "regas_ctrl", ctrl)
+    # bomba desligada mas ficou rega aberta (registro perdido): fecha agora
+    if not leit.get("bomba"):
+        con.execute("UPDATE regas SET fim=?, solo_fim=COALESCE(solo_fim,?) WHERE fim IS NULL",
+                    (agora, leit.get("solo")))
+    else:
+        abrir_rega_ao_vivo(con, agora, leit, cfg)
+
+
+def avaliar_hw(d):
+    """Diz se o Arduino esta bem, em atencao ou sobrecarregado."""
+    if not d or "lmx" not in d:
+        return {"nivel": -1, "status": "sem dados",
+                "motivos": ["O Arduino ainda não enviou dados de hardware (sketch antigo?)"]}
+    nivel, mot = 0, []
+    lmx_ms = d.get("lmx", 0) / 1000
+    if lmx_ms > 50:
+        nivel = max(nivel, 2);
+        mot.append(f"Volta mais lenta do loop {lmx_ms:.1f} ms (> 50 ms): a serial do ESP pode perder dados")
+    elif lmx_ms > 25:
+        nivel = max(nivel, 1);
+        mot.append(f"Volta mais lenta do loop {lmx_ms:.1f} ms (atenção acima de 25 ms)")
+    if d.get("ocu", 0) > 80:
+        nivel = max(nivel, 2);
+        mot.append(f"Carga média {d['ocu']}% (> 80%)")
+    elif d.get("ocu", 0) > 50:
+        nivel = max(nivel, 1);
+        mot.append(f"Carga média {d['ocu']}% (atenção acima de 50%)")
+    if d.get("rmn") and d["rmn"] < 150:
+        nivel = max(nivel, 2);
+        mot.append(f"RAM livre mínima {d['rmn']} bytes (< 150)")
+    elif d.get("rmn") and d["rmn"] < 300:
+        nivel = max(nivel, 1);
+        mot.append(f"RAM livre mínima {d['rmn']} bytes (atenção abaixo de 300)")
+    if d.get("vcc") and d["vcc"] < 4300:
+        nivel = max(nivel, 2);
+        mot.append(f"Alimentação {d['vcc'] / 1000:.2f} V (< 4,30 V)")
+    elif d.get("vcc") and d["vcc"] < 4600:
+        nivel = max(nivel, 1);
+        mot.append(f"Alimentação {d['vcc'] / 1000:.2f} V (atenção abaixo de 4,60 V)")
+    if d.get("qc") and d.get("buffer", 0) >= 0.75 * d["qc"]:
+        nivel = max(nivel, 1);
+        mot.append(f"Buffer quase cheio ({d['buffer']}/{d['qc']})")
+    if not mot:
+        mot.append("Tudo dentro dos limites seguros")
+    return {"nivel": nivel, "status": ["ok", "atenção", "sobrecarregado"][nivel], "motivos": mot}
 
 
 # ---------------------------------------------------------------------
@@ -281,27 +441,37 @@ def dispositivo():
                 hist.append({"em": agora - max(idade, 0), "temp": t10 / 10, "ldr": ldr, "solo": solo,
                              "bomba": fl & 1, "erros": fl >> 1})
             hist.sort(key=lambda x: x["em"])
+            sketch_v2 = "rgs" in q  # o sketch novo manda o registro de regas
             for h in hist:
                 con.execute("INSERT INTO leituras(em,origem,temp,ldr,solo,bomba,erros) VALUES(?,?,?,?,?,?,?)",
                             (h["em"], "buffer", h["temp"], h["ldr"], h["solo"], h["bomba"], h["erros"]))
-                registrar_bomba(con, h["em"], h["bomba"], -1, "buffer")
+                if not sketch_v2:
+                    registrar_bomba(con, h["em"], h, -1, "buffer", cfg)
 
-            # ---- leitura atual (todos os sensores) ----
+            # ---- leitura atual (todos os sensores + hardware) ----
             cur = {"temp": gi("t") / 10, "ldr": gi("l"), "solo_raw": gi("sr"), "solo": gi("s"),
                    "pot": gi("p"), "vel": gi("v"), "bomba": gi("b"), "motivo": gi("bm"),
-                   "led": gi("led"), "modo": gi("m"), "erros": gi("e")}
-            con.execute("""INSERT INTO leituras(em,origem,temp,ldr,solo_raw,solo,pot,vel,bomba,motivo,led,modo,erros)
-                           VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                   "led": gi("led"), "modo": gi("m"), "erros": gi("e"),
+                   "ram": gi("ram", None), "carga": gi("ocu", None), "lmx": gi("lmx", None), "vcc": gi("vcc", None)}
+            con.execute("""INSERT INTO leituras(em,origem,temp,ldr,solo_raw,solo,pot,vel,bomba,motivo,led,modo,erros,
+                           ram,carga,lmx,vcc) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                         (agora, "ao vivo", cur["temp"], cur["ldr"], cur["solo_raw"], cur["solo"], cur["pot"],
-                         cur["vel"], cur["bomba"], cur["motivo"], cur["led"], cur["modo"], cur["erros"]))
-            registrar_bomba(con, agora, cur["bomba"], cur["motivo"], "ao vivo")
+                         cur["vel"], cur["bomba"], cur["motivo"], cur["led"], cur["modo"], cur["erros"],
+                         cur["ram"], cur["carga"], cur["lmx"], cur["vcc"]))
+            if sketch_v2:
+                processar_registro_regas(con, q.get("rgs"), gi("up"), agora, cur, cfg)
+            else:
+                registrar_bomba(con, agora, cur, cur["motivo"], "ao vivo", cfg)
 
-            # ---- estado interno do Arduino ----
+            # ---- estado interno e hardware do Arduino ----
             disp = {"visto": agora, "up": gi("up"), "falha": gi("f"), "nfalhas": gi("n"), "buffer": gi("q"),
                     "descartadas": gi("x"), "regas": gi("rg"), "bomba_s": gi("lig"), "ram": gi("ram"),
                     "atrasos": gi("atr"), "cv": gi("cv"), "ack": gi("a"), "restante": gi("rr"),
                     "pausa": gi("pz"), "hist_recebido": len(hist),
                     "ip": request.headers.get("X-Real-IP", request.remote_addr)}
+            for k in ("qc", "env", "rmn", "rst", "fl", "vcc", "mhz", "lps", "lpn", "lmx", "ocu", "ocm"):
+                if k in q:
+                    disp[k] = gi(k)
             if visto_antes and agora - visto_antes > online_ate(cfg):
                 evento(con, "online", "Regador voltou a ficar ONLINE")
             elif not visto_antes:
@@ -309,7 +479,7 @@ def dispositivo():
             if disp_antes and disp["up"] + 5 < disp_antes.get("up", 0):
                 evento(con, "alerta", "O Arduino reiniciou (o contador de tempo ligado zerou)")
             if disp["falha"]:
-                evento(con, "alerta", f"Arduino voltou após {disp['nfalhas']} falha(s). Ultima: "
+                evento(con, "alerta", f"Arduino voltou após {disp['nfalhas']} falha(s). Última: "
                                       f"{FALHAS.get(disp['falha'], disp['falha'])}. Enviou {len(hist)} leitura(s) guardada(s).")
             if cur["erros"] != disp_antes.get("erros", 0):
                 if cur["erros"]:
@@ -318,6 +488,15 @@ def dispositivo():
                 else:
                     evento(con, "info", "Sensores normalizados")
             disp["erros"] = cur["erros"]
+            hw = avaliar_hw(disp)
+            if hw["nivel"] != disp_antes.get("hw_nivel", 0) and hw["nivel"] >= 0:
+                if hw["nivel"] == 2:
+                    evento(con, "alerta", "Arduino SOBRECARREGADO: " + "; ".join(hw["motivos"]))
+                elif hw["nivel"] == 1 and disp_antes.get("hw_nivel", 0) == 0:
+                    evento(con, "info", "Arduino em atenção: " + "; ".join(hw["motivos"]))
+                elif hw["nivel"] == 0:
+                    evento(con, "info", "Hardware do Arduino normalizado")
+            disp["hw_nivel"] = hw["nivel"]
             kv_set(con, "dispositivo", disp)
             kv_set(con, "online_flag", True)
 
@@ -340,7 +519,7 @@ def dispositivo():
             if not pend:
                 for p in con.execute("SELECT * FROM pedidos WHERE status='fila' ORDER BY prioridade DESC, id"):
                     if p["tipo"] == "regar" and (disp["restante"] > 0 or cfg["modo"] == 2):
-                        continue  # espera a rega manual atual terminar / modo desligado segura a fila
+                        continue
                     pend = p
                     break
                 if pend:
@@ -352,14 +531,15 @@ def dispositivo():
             if pend:
                 c, cid, cd = CMD_COD.get(pend["tipo"], 0), pend["id"], pend["duracao"] or 0
             linha = (f"CFG;i={cfg['intervalo']};lo={cfg['lo']};hi={cfg['hi']};m={cfg['modo']};v={cfg['vel']};"
-                     f"cv={cfg['versao']};c={c};cid={cid};cd={cd};FIM\n")
+                     f"vm={cfg['velm']};cv={cfg['versao']};c={c};cid={cid};cd={cd};hq={len(hist)};FIM\n")
 
             comunicacao(con, "recebido",
                         f"T={cur['temp']:.1f}C solo={cur['solo']}% (raw {cur['solo_raw']}) LDR={cur['ldr']} "
                         f"pot={cur['pot']} bomba={'ON' if cur['bomba'] else 'off'} vel={cur['vel']} "
-                        f"| +{len(hist)} do buffer | buffer Arduino={disp['buffer']} | ack={disp['ack']} cv={disp['cv']}")
+                        f"| +{len(hist)} do buffer (restam {disp['buffer']}) | RAM livre {disp.get('ram')} "
+                        f"| carga {disp.get('ocu', '?')}% | ack={disp['ack']} cv={disp['cv']}")
             comunicacao(con, "enviado", linha.strip())
-            aparar(con)
+            limpar_antigos(con, agora)
         return texto(linha)
     except Exception as e:  # nunca deixa o Arduino sem resposta
         app.logger.exception("erro em /d")
@@ -381,6 +561,16 @@ def erro(msg, status=400, **extra):
 
 def linha_dict(r):
     return dict(r) if r else None
+
+
+def regas_com_config(rows, agora):
+    out = []
+    for r in rows:
+        d = dict(r)
+        d["duracao_real"] = int((d["fim"] or agora) - d["inicio"])
+        d["em_andamento"] = d["fim"] is None
+        out.append(d)
+    return out
 
 
 @app.route("/api/estado")
@@ -421,16 +611,23 @@ def api_estado():
                                 MIN(solo) smin, MAX(solo) smax FROM leituras WHERE em>=?""", (h0,)).fetchone()
             regas_hoje = con.execute("SELECT * FROM regas WHERE inicio>=? OR fim IS NULL", (h0,)).fetchall()
             seg_bomba = sum(((r["fim"] or agora) - max(r["inicio"], h0)) for r in regas_hoje)
+            auto_hoje = [r for r in regas_hoje if r["motivo"] == 1]
+            seg_auto = sum(((r["fim"] or agora) - max(r["inicio"], h0)) for r in auto_hoje)
             n_com = \
             con.execute("SELECT COUNT(*) FROM comunicacao WHERE em>=? AND direcao='recebido'", (h0,)).fetchone()[0]
-            serie = [dict(r) for r in reversed(con.execute(
-                "SELECT em,solo,temp,ldr,bomba FROM leituras ORDER BY em DESC LIMIT 120").fetchall())]
-            regas_rec = [dict(r) for r in con.execute("SELECT * FROM regas ORDER BY id DESC LIMIT 8")]
+            regas_rec = regas_com_config(con.execute("SELECT * FROM regas ORDER BY id DESC LIMIT 10"), agora)
+            ult_auto = con.execute("SELECT * FROM regas WHERE motivo=1 ORDER BY id DESC LIMIT 1").fetchone()
             pres = [dict(r) for r in con.execute("SELECT nome,visto FROM presenca WHERE visto>? ORDER BY nome",
                                                  (agora - PRESENCA_S,))]
             lock = lock_cfg(con)
             ocup = quem_ocupa(con)
+            n_total = con.execute("SELECT COUNT(*) FROM leituras").fetchone()[0]
+            mais_antiga = con.execute("SELECT MIN(em) FROM leituras").fetchone()[0]
 
+        try:
+            tam_db = os.path.getsize(DB)
+        except OSError:
+            tam_db = 0
         return jsonify(
             agora=agora, online=online, dispositivo=disp, leitura=leit, config=cfg,
             config_aplicada=bool(disp) and disp.get("cv") == cfg["versao"],
@@ -439,13 +636,51 @@ def api_estado():
             eventos=[dict(e) for e in evs], ultimo_evento=ultimo_ev, inicial=not desde,
             hoje={"leituras": st["n"], "tmin": st["tmin"], "tmax": st["tmax"], "tavg": st["tavg"],
                   "smin": st["smin"], "smax": st["smax"], "regas": len(regas_hoje),
-                  "bomba_s": int(seg_bomba), "comunicacoes": n_com},
-            serie=serie, regas=regas_rec, presenca=pres,
+                  "bomba_s": int(seg_bomba), "comunicacoes": n_com,
+                  "regas_auto": len(auto_hoje), "auto_s": int(seg_auto)},
+            regas=regas_rec, ultima_auto=regas_com_config([ult_auto], agora)[0] if ult_auto else None,
+            presenca=pres, hw=avaliar_hw(disp) if disp else avaliar_hw(None),
+            hw_limites={"ram_total": RAM_TOTAL, "flash_total": FLASH_TOTAL},
+            banco={"tamanho": tam_db, "leituras": n_total, "desde": mais_antiga, "retencao_dias": RETENCAO_S // 86400},
             textos={"modos": MODOS, "motivos": MOTIVOS, "leds": LEDS, "falhas": FALHAS, "erros": ERROS_SENSOR},
+            padroes=CFG_PADRAO, limites=LIMITES, duracao_recomendada=DURACAO_RECOMENDADA,
             senha_padrao=(SENHA == "fatec2026"),
         )
     finally:
         con.close()
+
+
+@app.route("/api/serie")
+def api_serie():
+    """Leituras de uma janela (minutos), agrupadas em no maximo 240 pontos."""
+    try:
+        minutos = max(5, min(int(request.args.get("min", 60)), RETENCAO_S // 60))
+    except ValueError:
+        minutos = 60
+    agora = time.time()
+    ini = agora - minutos * 60
+    con = db()
+    try:
+        rows = con.execute("SELECT em,solo,temp,ldr,bomba,ram,carga,lmx,vcc FROM leituras WHERE em>=? ORDER BY em",
+                           (ini,)).fetchall()
+    finally:
+        con.close()
+    n_max = 240
+    passo = (minutos * 60) / n_max
+    grupos = {}
+    for r in rows:
+        k = int((r["em"] - ini) // passo)
+        grupos.setdefault(k, []).append(r)
+    pontos = []
+    for k in sorted(grupos):
+        g = grupos[k]
+        p = {"em": sum(x["em"] for x in g) / len(g)}
+        for campo in ("solo", "temp", "ldr", "ram", "carga", "lmx", "vcc"):
+            vals = [x[campo] for x in g if x[campo] is not None]
+            p[campo] = round(sum(vals) / len(vals), 1) if vals else None
+        p["bomba"] = max((x["bomba"] or 0) for x in g)
+        pontos.append(p)
+    return jsonify(inicio=ini, fim=agora, minutos=minutos, pontos=pontos, brutos=len(rows))
 
 
 @app.route("/api/regar", methods=["POST"])
@@ -461,25 +696,27 @@ def api_regar():
             con.execute("BEGIN IMMEDIATE")
             cfg = get_cfg(con)
             if cfg["modo"] == 2:
-                return erro("O regador está em modo DESLIGADO. Mude o modo em Ajustes para pedir rega.", 409)
+                return erro("O regador está em modo DESLIGADO. Ligue em Ajustes para pedir rega.", 409)
             try:
                 dur = int(b.get("duracao") or cfg["duracao"])
             except (TypeError, ValueError):
                 return erro("Duração inválida")
-            if not 1 <= dur <= 600:
-                return erro("A duração deve ficar entre 1 e 600 segundos")
+            if not 2 <= dur <= 600:
+                return erro("A duração deve ficar entre 2 e 600 segundos")
             motivos, _ = protecao(con, cfg, agora)
             senha = b.get("senha")
             if motivos and not senha_ok(senha):
                 return erro("Senha incorreta" if senha else "Proteção contra encharcar ativa",
                             403, precisa_senha=True, motivos=motivos)
             ocup = quem_ocupa(con)
-            cur = con.execute("INSERT INTO pedidos(criado,tipo,duracao,quem,prioridade,status,forcado,obs) "
-                              "VALUES(?,?,?,?,?,?,?,?)",
+            cur = con.execute("INSERT INTO pedidos(criado,tipo,duracao,quem,prioridade,status,forcado,obs,vel) "
+                              "VALUES(?,?,?,?,?,?,?,?,?)",
                               (agora, "regar", dur, nome, 0, "fila", 1 if motivos else 0,
-                               "; ".join(motivos) if motivos else None))
+                               "; ".join(motivos) if motivos else None, cfg["velm"]))
             pos = len(fila_ativa(con))
-            msg = f"{nome} pediu uma rega de {dur} s (posição {pos} na fila)"
+            msg = f"{nome} pediu uma rega de {dur} s · potência {txt_vel(cfg['velm'])} (posição {pos} na fila)"
+            if dur > DURACAO_RECOMENDADA:
+                msg += f" — acima dos {DURACAO_RECOMENDADA} s recomendados"
             if motivos:
                 msg += " — liberou a proteção com senha: " + "; ".join(motivos)
             evento(con, "pedido", msg, nome)
@@ -562,6 +799,14 @@ def api_limpar_fila():
         con.close()
 
 
+def fmt_valor(k, v):
+    if k == "modo":
+        return MODOS[v]
+    if k in ("vel", "velm"):
+        return txt_vel(v)
+    return str(v)
+
+
 def salvar_config(nome, novo, origem):
     con = db()
     try:
@@ -577,10 +822,11 @@ def salvar_config(nome, novo, origem):
                 if lock and not lock["expirado"]:
                     return erro(f"{lock['quem']} já está enviando uma configuração ao regador automático "
                                 f"(v{lock['versao']}). Aguarde o Arduino confirmar e tente de novo.", 409, lock=lock)
-            kv_set(con, "config", cfg)
-            mudou = [f"{k}: {atual[k]} -> {cfg[k]}" for k in CFG_PADRAO if cfg[k] != atual[k]]
+            mudou = [f"{NOMES_CAMPOS[k]}: {fmt_valor(k, atual[k])} → {fmt_valor(k, cfg[k])}"
+                     for k in CFG_PADRAO if cfg[k] != atual[k]]
             if not mudou:
                 return jsonify(ok=True, aviso="Nada mudou.")
+            kv_set(con, "config", cfg)
             if muda_arduino:
                 versao = atual["versao"] + 1
                 kv_set(con, "cfg_versao", versao)
@@ -604,8 +850,9 @@ def api_config():
     if not nome:
         return erro("Informe seu nome")
     if not senha_ok(b.get("senha")):
-        return erro("Senha incorreta", 403, precisa_senha=True, motivos=["Mudar a configuração exige senha"])
-    return salvar_config(nome, b, "alterou a configuração")
+        return erro("Senha incorreta" if b.get("senha") else "Mudar a configuração exige senha", 403,
+                    precisa_senha=True, motivos=["Mudar a configuração exige senha"])
+    return salvar_config(nome, b, b.get("origem") or "alterou a configuração")
 
 
 @app.route("/api/padroes", methods=["POST"])
@@ -620,21 +867,25 @@ def api_padroes():
 @app.route("/api/historico")
 def api_historico():
     tipo = request.args.get("tipo", "eventos")
-    n = max(1, min(int(request.args.get("n", 100) or 100), 1000))
+    try:
+        n = max(1, min(int(request.args.get("n", 150)), 1000))
+    except ValueError:
+        n = 150
     direcao = request.args.get("direcao")
-    tabelas = {"eventos": "eventos", "comunicacao": "comunicacao", "pedidos": "pedidos",
-               "leituras": "leituras", "regas": "regas"}
-    if tipo not in tabelas:
-        return erro("tipo invalido")
+    if tipo not in ("eventos", "comunicacao", "pedidos", "leituras", "regas"):
+        return erro("tipo inválido")
     con = db()
     try:
-        sql, args = f"SELECT * FROM {tabelas[tipo]}", []
+        sql, args = f"SELECT * FROM {tipo}", []
         if tipo == "comunicacao" and direcao in ("recebido", "enviado"):
             sql += " WHERE direcao=?"
             args.append(direcao)
         sql += " ORDER BY id DESC LIMIT ?"
         args.append(n)
-        return jsonify([dict(r) for r in con.execute(sql, args)])
+        rows = [dict(r) for r in con.execute(sql, args)]
+        if tipo == "regas":
+            rows = regas_com_config(rows, time.time())
+        return jsonify(rows)
     finally:
         con.close()
 
@@ -643,10 +894,10 @@ def api_historico():
 def api_csv():
     tipo = request.args.get("tipo", "leituras")
     if tipo not in ("leituras", "eventos", "comunicacao", "pedidos", "regas"):
-        return erro("tipo invalido")
+        return erro("tipo inválido")
     con = db()
     try:
-        rows = con.execute(f"SELECT * FROM {tipo} ORDER BY id DESC LIMIT 20000").fetchall()
+        rows = con.execute(f"SELECT * FROM {tipo} ORDER BY id DESC").fetchall()
         buf = io.StringIO()
         w = csv.writer(buf, delimiter=";")
         if rows:
@@ -666,7 +917,6 @@ def painel():
     resp.headers["Cache-Control"] = "no-cache"
     return resp
 
-
 @app.errorhandler(Exception)
 def falha_geral(e):
     from werkzeug.exceptions import HTTPException
@@ -676,7 +926,6 @@ def falha_geral(e):
     if request.path.startswith("/api/"):
         return erro(f"Erro interno: {type(e).__name__}", 500)
     return Response("Erro interno", 500)
-
 
 init_db()
 
